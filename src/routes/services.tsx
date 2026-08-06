@@ -82,7 +82,8 @@ function ServicesPage() {
             title,
             experience_years,
             hourly_rate,
-            location,
+            city,
+            neighborhood,
             availability,
             profiles (
               id,
@@ -377,9 +378,9 @@ const toggleFavorite = async (providerId: string) => {
                   category?.name || "Uncategorized";
 
                 const location =
-                  provider?.location ||
-                  profile?.city ||
-                  "Location not specified";
+                provider?.neighborhood
+                 ? `${provider.neighborhood}, ${provider.city}`
+                    : "Qardho";
 
                 const avatar =
                   profile?.avatar_URL;

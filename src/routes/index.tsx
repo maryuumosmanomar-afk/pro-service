@@ -304,7 +304,8 @@ function FeaturedProfessionals() {
         .select(`
           id,
           title,
-          location,
+          city,
+          neighborhood,
           hourly_rate,
           availability,
           profiles (
@@ -467,10 +468,12 @@ function FeaturedProfessionals() {
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      {pro.location || "Location not set"}
-                    </span>
+                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
+  <MapPin className="h-3 w-3" />
+  {pro.neighborhood
+    ? `${pro.neighborhood}, ${pro.city}`
+    : "Qardho"}
+</span>
 
                     <span className="text-sm font-semibold text-primary">
                       ${Number(pro.hourly_rate || 0)}/hr

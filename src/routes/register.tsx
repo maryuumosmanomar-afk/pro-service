@@ -4,6 +4,7 @@ import { Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
+import { qardhoNeighborhoods } from "@/constants/locations";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Register — ProService Skills Network" }] }),
@@ -19,6 +20,7 @@ const [phone, setPhone] = useState("");
 const [password, setPassword] = useState("");
 const [category, setCategory] = useState("");
 const [loading, setLoading] = useState(false);
+const [neighborhood, setNeighborhood] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +56,9 @@ const { error: profileError } = await supabase
     full_name: firstName + " " + lastName,
     phone,
     role,
+     city: "Qardho",
+     neighborhood,
+
   });
 
 if (profileError) {
@@ -87,8 +92,9 @@ if (role === "professional") {
       title: category,
       experience_years: 0,
       hourly_rate: 0,
-      location: "",
-      availability: true,
+       city: "Qardho",
+       neighborhood,
+       availability: true,
     });
 
   if (providerError) {
@@ -169,6 +175,28 @@ onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border b
 onChange={(e) => setPhone(e.target.value)} className= "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="+1 (555) 000-0000" required />
             
               </div>
+              <div>
+  <label className="block mb-1">
+    Xaafadda aad joogto
+  </label>
+
+  <select
+    value={neighborhood}
+    onChange={(e) => setNeighborhood(e.target.value)}
+    className="border rounded p-2 w-full"
+  >
+    <option value="">
+      Dooro xaafadda
+    </option>
+
+    {qardhoNeighborhoods.map((area) => (
+      <option key={area} value={area}>
+        {area}
+      </option>
+    ))}
+
+  </select>
+</div>
               {role === "professional" && (
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Service category</label>

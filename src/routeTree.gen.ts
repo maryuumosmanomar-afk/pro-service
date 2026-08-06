@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProfessionalDashboardRouteImport } from './routes/professional-dashboard'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as LoginRouteImport } from './routes/login'
@@ -28,6 +29,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfessionalDashboardRoute = ProfessionalDashboardRouteImport.update({
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/professional-dashboard': typeof ProfessionalDashboardRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRoute
   '/professional/$providerId': typeof ProfessionalProviderIdRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/professional-dashboard': typeof ProfessionalDashboardRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRoute
   '/professional/$providerId': typeof ProfessionalProviderIdRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/professional-dashboard': typeof ProfessionalDashboardRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRoute
   '/professional/$providerId': typeof ProfessionalProviderIdRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/professional-dashboard'
+    | '/profile'
     | '/register'
     | '/services'
     | '/professional/$providerId'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/professional-dashboard'
+    | '/profile'
     | '/register'
     | '/services'
     | '/professional/$providerId'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/professional-dashboard'
+    | '/profile'
     | '/register'
     | '/services'
     | '/professional/$providerId'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   ProfessionalDashboardRoute: typeof ProfessionalDashboardRoute
+  ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ServicesRoute: typeof ServicesRoute
   ProfessionalProviderIdRoute: typeof ProfessionalProviderIdRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/professional-dashboard': {
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   ProfessionalDashboardRoute: ProfessionalDashboardRoute,
+  ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ServicesRoute: ServicesRoute,
   ProfessionalProviderIdRoute: ProfessionalProviderIdRoute,

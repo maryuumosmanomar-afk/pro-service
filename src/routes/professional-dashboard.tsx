@@ -4,6 +4,8 @@ import { Inbox, CheckCircle, DollarSign, Star, MapPin, ToggleLeft, ToggleRight, 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { MessageCircle } from "lucide-react";
+import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 export const Route = createFileRoute("/professional-dashboard")({
   head: () => ({ meta: [{ title: "Professional Dashboard — ProService Skills Network" }] }),
@@ -367,7 +369,7 @@ useEffect(() => {
   }
 }, [activeTab]);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Link to="/" className="text-lg font-bold text-foreground">Pro<span className="gradient-text">Service</span></Link>
@@ -379,6 +381,16 @@ useEffect(() => {
               <span className={available ? "text-success font-medium" : "text-muted-foreground"}>
                 {available ? "Available" : "Offline"}
               </span>
+           <Button asChild variant="ghost" size="sm">
+  <Link
+    to="/messages"
+    search={{
+      receiverId: undefined,
+    }}
+  >
+    <MessageCircle className="h-5 w-5" />
+  </Link>
+</Button>
             </button>
             <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
           </div>
@@ -386,16 +398,27 @@ useEffect(() => {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Professional Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-  {loading
-    ? "Loading..."
-    : `${profile?.full_name || "Professional"} · ${
-        categoryName || providerProfile?.title || "Service Provider"
-      }`}
-</p>
-        </div>
+        <div className="mb-8 flex items-center justify-between">
+  <div>
+    <h1 className="text-2xl font-bold text-foreground">
+      Professional Dashboard
+    </h1>
+
+    <p className="text-sm text-muted-foreground">
+      {loading
+        ? "Loading..."
+        : `${profile?.full_name || "Professional"} · ${
+            categoryName || providerProfile?.title || "Service Provider"
+          }`}
+    </p>
+  </div>
+
+  <Button asChild>
+    <Link to="/add-service">
+      + Add Service
+    </Link>
+  </Button>
+</div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
@@ -471,22 +494,36 @@ useEffect(() => {
                     <span>{booking.booking_data}</span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="hero" 
-                    size="sm"
-                    onClick={() => handleUpdateStatus(booking.id, "accepted")}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUpdateStatus(booking.id, "rejected")}
-                  >
-                    Decline
-                  </Button>
-                </div>
+              <div className="flex flex-wrap gap-2">
+  <Button
+    variant="hero"
+    size="sm"
+    onClick={() => handleUpdateStatus(booking.id, "accepted")}
+  >
+    Accept
+  </Button>
+
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => handleUpdateStatus(booking.id, "rejected")}
+  >
+    Decline
+  </Button>
+
+  {booking.customer_id && (
+    <Button asChild variant="outline" size="sm">
+      <Link
+        to="/messages"
+        search={{
+          receiverId: booking.customer_id,
+        }}
+      >
+        Message
+      </Link>
+    </Button>
+  )}
+</div>
               </div>
             </motion.div>
           );
@@ -645,6 +682,7 @@ useEffect(() => {
   </div>
 )}
       </div>
+      <DashboardBottomNav role="professional" />
     </div>
   );
 }

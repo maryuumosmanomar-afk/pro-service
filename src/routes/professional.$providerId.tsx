@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import {
+  BadgeCheck, Briefcase, MapPinned, MessageCircle, Heart,} from "lucide-react";
+import { BriefcaseBusiness, DollarSign, CircleCheckBig,} from "lucide-react";
 
 export const Route = createFileRoute("/professional/$providerId")({
   component: ProfessionalProfilePage,
@@ -27,6 +30,36 @@ const [bookingDate, setBookingDate] = useState("");
 const [bookingSubmitting, setBookingSubmitting] = useState(false);
 const [bookingError, setBookingError] = useState<string | null>(null);
 const [bookingSuccess, setBookingSuccess] = useState(false);
+const [averageRating, setAverageRating] = useState(0);
+const [reviewCount, setReviewCount] = useState(0);
+
+const loadReviews = async () => {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("provider_id", providerId);
+
+  if (error) {
+    console.log(error.message);
+    return;
+  }
+
+  const reviews = data || [];
+
+  setReviewCount(reviews.length);
+
+  if (reviews.length === 0) {
+    setAverageRating(0);
+    return;
+  }
+
+  const total = reviews.reduce(
+    (sum, review) => sum + review.rating,
+    0
+  );
+
+  setAverageRating(total / reviews.length);
+};
 
   useEffect(() => {
     const loadProfessional = async () => {
@@ -40,7 +73,6 @@ const [bookingSuccess, setBookingSuccess] = useState(false);
           title,
           experience_years,
           hourly_rate,
-          location,
           availability,
           profiles (
             id,
@@ -49,7 +81,8 @@ const [bookingSuccess, setBookingSuccess] = useState(false);
             bio,
             city,
             country,
-            is_verified
+            is_verified,
+            created_at
           )
         `)
         .eq("id", providerId)
@@ -99,6 +132,7 @@ const [bookingSuccess, setBookingSuccess] = useState(false);
 
         setIsFavorite(!!favoriteData);
       }
+      await loadReviews();
 
       setLoading(false);
     };
@@ -263,6 +297,9 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
 
   const profile = provider.profiles;
   const providerName = profile?.full_name || "Professional";
+  const memberSince = profile?.created_at
+  ? new Date(profile.created_at).getFullYear()
+  : "N/A";
 
   const initials = providerName
     .split(" ")
@@ -307,22 +344,32 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
                   </h1>
 
                   {profile?.is_verified && (
-                    <span className="text-sm font-medium text-green-600">
-                      Verified
-                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+  <BadgeCheck className="h-4 w-4" />
+  Verified
+</span>
                   )}
                 </div>
 
-                <p className="mt-1 text-muted-foreground">
-                  {provider.title || "Professional Service Provider"}
-                </p>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-primary">
 
-                {provider.location && (
-                  <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {provider.location}
-                  </div>
-                )}
+  <Briefcase className="h-4 w-4" />
+
+  <span className="font-medium">
+    {provider.title || "Professional Service Provider"}
+  </span>
+
+</div>
+<div className="mt-4 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2">
+
+  <MapPin className="h-4 w-4 text-primary" />
+
+  <span className="text-sm">
+    {profile?.city}
+    {profile?.neighborhood ? ` • ${profile.neighborhood}` : ""}
+  </span>
+
+</div>
               </div>
             </div>
 
@@ -347,33 +394,102 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
           </div>
 
           {/* Professional Details */}
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-xs text-muted-foreground">
-                Experience
-              </p>
-              <p className="mt-1 font-semibold">
-                {provider.experience_years || 0} years
-              </p>
-            </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
 
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-xs text-muted-foreground">
-                Hourly Rate
-              </p>
-              <p className="mt-1 font-semibold">
-                ${provider.hourly_rate || 0}/hour
-              </p>
-            </div>
+  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-yellow-100">
+    <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+  </div>
 
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-xs text-muted-foreground">
-                Availability
-              </p>
-              <p className="mt-1 font-semibold">
-                {provider.availability ? "Available" : "Unavailable"}
-              </p>
-            </div>
+  <p className="text-sm text-gray-500">
+    Rating
+  </p>
+
+  <p className="mt-1 text-xl font-bold">
+    {reviewCount > 0
+      ? averageRating.toFixed(1)
+      : "--"}
+  </p>
+
+  <p className="text-sm text-gray-500">
+    {reviewCount} Review{reviewCount !== 1 ? "s" : ""}
+  </p>
+
+</div>
+           <div className="rounded-2xl  border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100">
+    <BriefcaseBusiness className="h-5 w-5 text-blue-600" />
+  </div>
+ 
+
+  <p className="text-sm text-gray-500">
+    Experience
+  </p>
+
+  <p className="mt-1 text-xl font-bold">
+    {provider.experience_years || 0} Years
+  </p>
+
+</div>
+
+<div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-green-100">
+    <DollarSign className="h-5 w-5 text-green-600" />
+  </div>
+
+  <p className="text-sm text-gray-500">
+    Hourly Rate
+  </p>
+
+  <p className="mt-1 text-xl font-bold">
+    ${provider.hourly_rate || 0}/hr
+  </p>
+
+</div>
+            <div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+  <div
+    className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${
+      provider.availability
+        ? "bg-green-100"
+        : "bg-red-100"
+    }`}
+  >
+    <CircleCheckBig
+      className={`h-5 w-5 ${
+        provider.availability
+          ? "text-green-600"
+          : "text-red-600"
+      }`}
+    />
+  </div>
+
+  <p className="text-sm text-gray-500">
+    Availability
+  </p>
+
+  <p className="mt-1 text-xl font-bold">
+    {provider.availability ? "Available" : "Unavailable"}
+  </p>
+
+</div> 
+<div className="rounded-2xl border bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100">
+    📅
+  </div>
+
+  <p className="text-sm text-gray-500">
+    Member Since
+  </p>
+
+  <p className="mt-1 text-xl font-bold">
+    {memberSince}
+  </p>
+
+</div>
           </div>
 
           {profile?.bio && (
@@ -383,7 +499,7 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
                 {profile.bio}
               </p>
             </div>
-          )}
+          )}  
         </div>
 
         {/* Services */}

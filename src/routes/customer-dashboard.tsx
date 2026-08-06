@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { serviceCategories } from "@/lib/mock-data";
 import { supabase } from "@/lib/supabase";
+import { MessageCircle } from "lucide-react";
+import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 
 export const Route = createFileRoute("/customer-dashboard")({
@@ -119,7 +121,7 @@ useEffect(() => {
         ),
         provider_profiles (
           id,
-          location,
+          user_id,
           profiles ( full_name )
         )
       `)
@@ -160,7 +162,6 @@ useEffect(() => {
         provider_profiles (
           id,
           title,
-          location,
           experience_years,
           hourly_rate,
           availability,
@@ -359,6 +360,23 @@ const handleCreateRequest = async (
       alert("Selected category was not found.");
       return;
     }
+    const { data: serviceData, error: serviceError } = await supabase
+  .from("services")
+  .select("id")
+  .eq("category_id", categoryData.id)
+  .limit(1)
+  .maybeSingle();
+
+if (serviceError) {
+  console.log("Service error:", serviceError.message);
+  alert("Could not find a service.");
+  return;
+}
+
+if (!serviceData) {
+  alert("No service found for this category.");
+  return;
+}
 
     // 3. Hel professional-ka category-gaas leh
     const { data: providerData, error: providerError } =
@@ -387,14 +405,14 @@ const handleCreateRequest = async (
     const { data: newBooking, error: bookingError } =
       await supabase
         .from("bookings")
-        .insert({
-          customer_id: user.id,
-          provider_id: providerData.id,
-          service_id: null,
-          booking_data: requestLocation,
-          message: requestDetails,
-          status: "pending",
-        })
+     .insert({
+  customer_id: user.id,
+  provider_id: providerData.id,
+  services_id: serviceData.id,
+  booking_data: requestLocation,
+  message: requestDetails,
+  status: "pending",
+})
         .select()
         .single();
 
@@ -452,7 +470,7 @@ if (notificationError) {
           ),
           provider_profiles (
             id,
-            location,
+            user_id,
             profiles ( full_name )
           )
         `)
@@ -521,8 +539,11 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
   setReviewSubmitting(false);
   setReviewSuccess(true);
 };
+
   return (
-    <div className="min-h-screen bg-background">
+    
+    
+    <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Link to="/" className="text-lg font-bold text-foreground">Pro<span className="gradient-text">Service</span></Link>
@@ -530,6 +551,17 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
             <span className="text-sm text-muted-foreground">
   {loading ? "Loading..." : profile?.full_name || "Customer"}
 </span>
+<Button asChild variant="ghost" size="sm">
+  <Link
+    to="/messages"
+    search={{
+      receiverId: undefined,
+    }}
+  >
+    <MessageCircle className="h-5 w-5" />
+  </Link>
+</Button>
+
             <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
           </div>
         </div>
@@ -652,17 +684,28 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
                   </p>
                 )}
                 <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                  {provider?.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {provider.location}
-                    </span>
-                  )}
+                 
                   <span>{booking.booking_data}</span>
                 </div>
               </div>
-              <span className="text-sm font-bold text-primary">
-                {service?.currency || "USD"} {service?.price ?? 0}
-              </span>
+          <div className="flex flex-col items-end gap-2">
+  <span className="text-sm font-bold text-primary">
+    {service?.currency || "USD"} {service?.price ?? 0}
+  </span>
+
+  {provider?.user_id && (
+    <Button asChild size="sm" variant="outline">
+      <Link
+        to="/messages"
+        search={{
+          receiverId: provider.user_id,
+        }}
+      >
+        Message
+      </Link>
+    </Button>
+  )}
+</div>
             </div>
           </motion.div>
         );
@@ -756,12 +799,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div className="mt-3 space-y-1">
-                {provider?.location && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {provider.location}
-                  </div>
-                )}
+          
 
                 {provider?.experience_years !== null &&
                   provider?.experience_years !== undefined && (
@@ -1153,6 +1191,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
           </div>
         )}
       </div>
+      <DashboardBottomNav role="customer" />
     </div>
   );
 }
