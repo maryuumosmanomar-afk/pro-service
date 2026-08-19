@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Send, Bookmark, Bell, Clock, MapPin, Plus, Star, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { serviceCategories } from "@/lib/mock-data";
 import { supabase } from "@/lib/supabase";
 import { MessageCircle } from "lucide-react";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
@@ -23,7 +22,7 @@ const statusColors: Record<string, string> = {
 
 function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState("requests");
-  const [showNewRequest, setShowNewRequest] = useState(false);
+  
   const [profile, setProfile] = useState<any>(null);
 const [loading, setLoading] = useState(true);
 const [bookings, setBookings] = useState<any[]>([]);
@@ -40,10 +39,7 @@ const [reviewSuccess, setReviewSuccess] = useState(false);
 const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
 const [notifications, setNotifications] = useState<any[]>([]);
 const [notificationsLoading, setNotificationsLoading] = useState(false);
-const [selectedCategory, setSelectedCategory] = useState("");
-const [requestDetails, setRequestDetails] = useState("");
-const [requestLocation, setRequestLocation] = useState("");
-const [creatingRequest, setCreatingRequest] = useState(false);
+
   const tabs = [
     { id: "requests", label: "My Requests", icon: Send },
     { id: "saved", label: "Saved Pros", icon: Bookmark },
@@ -323,173 +319,7 @@ const markAllNotificationsAsRead = async () => {
     }))
   );
 };
-const handleCreateRequest = async (
-  e: React.FormEvent<HTMLFormElement>
-) => {
-  e.preventDefault();
 
-  if (!selectedCategory || !requestDetails || !requestLocation) {
-    alert("Please fill in all fields.");
-    return;
-  }
-
-  setCreatingRequest(true);
-
-  try {
-    // 1. Hel user-ka hadda login-gareysan
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      alert("Please login first.");
-      return;
-    }
-
-    // 2. Hel category-ga la doortay
-    const { data: categoryData, error: categoryError } =
-      await supabase
-        .from("categories")
-        .select("id, name")
-        .eq("name", selectedCategory)
-        .single();
-
-    if (categoryError || !categoryData) {
-      console.log("Category error:", categoryError?.message);
-      alert("Selected category was not found.");
-      return;
-    }
-    const { data: serviceData, error: serviceError } = await supabase
-  .from("services")
-  .select("id")
-  .eq("category_id", categoryData.id)
-  .limit(1)
-  .maybeSingle();
-
-if (serviceError) {
-  console.log("Service error:", serviceError.message);
-  alert("Could not find a service.");
-  return;
-}
-
-if (!serviceData) {
-  alert("No service found for this category.");
-  return;
-}
-
-    // 3. Hel professional-ka category-gaas leh
-    const { data: providerData, error: providerError } =
-      await supabase
-        .from("provider_profiles")
-        .select("id, user_id")
-        .eq("category_id", categoryData.id)
-        .eq("availability", true)
-        .limit(1)
-        .maybeSingle();
-
-    if (providerError) {
-      console.log("Provider error:", providerError.message);
-      alert("Could not find a professional.");
-      return;
-    }
-
-    if (!providerData) {
-      alert(
-        "No available professional found for this service category."
-      );
-      return;
-    }
-
-    // 4. Samee booking/request cusub
-    const { data: newBooking, error: bookingError } =
-      await supabase
-        .from("bookings")
-     .insert({
-  customer_id: user.id,
-  provider_id: providerData.id,
-  services_id: serviceData.id,
-  booking_data: requestLocation,
-  message: requestDetails,
-  status: "pending",
-})
-        .select()
-        .single();
-
-    if (bookingError) {
-      console.log(
-        "Create booking error:",
-        bookingError.message
-      );
-      alert("Could not create your request.");
-      return;
-    }
-    // Create automatic notification for the professional
-const { error: notificationError } = await supabase
-  .from("notifications")
-  .insert({
-    user_id: providerData.user_id,
-    title: "New Service Request",
-    body: "You have received a new service request from a customer.",
-    is_read: false,
-  });
-
-if (notificationError) {
-  console.log(
-    "Professional notification error:",
-    notificationError.message
-  );
-}
-
-    console.log("New booking created:", newBooking);
-
-    // 5. Nadiifi form-ka
-    setSelectedCategory("");
-    setRequestDetails("");
-    setRequestLocation("");
-
-    // 6. Xir modal-ka
-    setShowNewRequest(false);
-
-    // 7. Dib u soo qaado bookings-ka
-    const { data: updatedBookings, error: reloadError } =
-      await supabase
-        .from("bookings")
-        .select(`
-          id,
-          created_at,
-          booking_data,
-          message,
-          status,
-          services (
-            id,
-            Title,
-            price,
-            currency,
-            categories ( name )
-          ),
-          provider_profiles (
-            id,
-            user_id,
-            profiles ( full_name )
-          )
-        `)
-        .eq("customer_id", user.id)
-        .order("created_at", { ascending: false });
-
-    if (!reloadError) {
-      setBookings(updatedBookings || []);
-    }
-
-    alert("Your service request has been sent successfully!");
-
-  } catch (error) {
-    console.log("Unexpected request error:", error);
-    alert("Something went wrong.");
-  } finally {
-    setCreatingRequest(false);
-  }
-};
 const openReviewModal = (booking: any) => {
   setSelectedBookingForReview(booking);
   setReviewRating(0);
@@ -551,16 +381,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
             <span className="text-sm text-muted-foreground">
   {loading ? "Loading..." : profile?.full_name || "Customer"}
 </span>
-<Button asChild variant="ghost" size="sm">
-  <Link
-    to="/messages"
-    search={{
-      receiverId: undefined,
-    }}
-  >
-    <MessageCircle className="h-5 w-5" />
-  </Link>
-</Button>
+
 
             <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
           </div>
@@ -577,9 +398,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
 </h1>
             <p className="text-sm text-muted-foreground">Manage your service requests</p>
           </div>
-          <Button variant="hero" onClick={() => setShowNewRequest(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New Request
-          </Button>
+          
         </div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-4">
@@ -1134,62 +953,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
   </div>
 )}
 
-        {showNewRequest && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4" onClick={() => setShowNewRequest(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-elevated" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-bold text-card-foreground">New Service Request</h2>
-              <form className="mt-4 space-y-4" onSubmit={handleCreateRequest}>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Service Category</label>
-                  <select
-  value={selectedCategory}
-  onChange={(e) => setSelectedCategory(e.target.value)}
-  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-  required
->
-                    <option value="">Select a service</option>
-                    {serviceCategories.map((c) => <option key={c.id}>{c.title}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Request Details</label>
-                  <textarea
-  value={requestDetails}
-  onChange={(e) => setRequestDetails(e.target.value)}
-  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-  rows={3}
-  placeholder="Describe what you need..."
-  required
-/>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Your Location</label>
-                  <div className="flex gap-2">
-                    <input
-  value={requestLocation}
-  onChange={(e) => setRequestLocation(e.target.value)}
-  className="flex-1 rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-  placeholder="Enter your address..."
-  required
-/>
-                    <Button type="button" variant="outline"><MapPin className="h-4 w-4" /></Button>
-                  </div>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowNewRequest(false)}>Cancel</Button>
-                  <Button
-  type="submit"
-  variant="hero"
-  className="flex-1"
-  disabled={creatingRequest}
->
-  {creatingRequest ? "Sending..." : "Send Request"}
-</Button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
+      
       </div>
       <DashboardBottomNav role="customer" />
     </div>

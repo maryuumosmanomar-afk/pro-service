@@ -8,6 +8,7 @@ import {
   Clock,
   Users,
   CheckCircle,
+  ShieldCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,21 +36,38 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
+    
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
       <ServiceCategoriesSection />
       <HowItWorksSection />
+      <AboutSection />
       <FeaturedProfessionals />
       <CTASection />
       <Footer />
     </div>
   );
 }
+  
+
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden gradient-primary py-20 sm:py-28 lg:py-36">
+    <section className="relative overflow-hidden py-20 sm:py-28 lg:py-36">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=2000&q=80')",
+        }}
+      />
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-primary/80" />
+
+      {/* Decorative pattern */}
       <div
         className="absolute inset-0 opacity-10"
         style={{
@@ -67,7 +85,8 @@ function HeroSection() {
           className="max-w-3xl"
         >
           <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
-            <MapPin className="h-3.5 w-3.5" /> Find Pros Near You
+            <MapPin className="h-3.5 w-3.5" />
+            Find Pros Near You
           </span>
 
           <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
@@ -77,21 +96,12 @@ function HeroSection() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg text-primary-foreground/80">
-            Connect with verified local experts for any job — from home
-            renovation to wedding photography. Fast, reliable, and close by.
+            Connect with skilled local professionals for the services you
+            need. Discover services, explore professional profiles, and find
+            the right person for your job.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Button
-              asChild
-              variant="hero-outline"
-              size="xl"
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-            >
-              <Link to="/services">
-                Browse Services <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
+          <div>
 
             <Button
               asChild
@@ -100,18 +110,6 @@ function HeroSection() {
             >
               <Link to="/register">Join as Professional</Link>
             </Button>
-          </div>
-
-          <div className="mt-10 flex flex-wrap gap-6 text-sm text-primary-foreground/70">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle className="h-4 w-4" /> 300+ Professionals
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Shield className="h-4 w-4" /> Verified & Trusted
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4" /> Location Matching
-            </span>
           </div>
         </motion.div>
       </div>
@@ -223,27 +221,27 @@ function ServiceCategoriesSection() {
 
 function HowItWorksSection() {
   const steps = [
-    {
-      icon: Users,
-      title: "Search Professionals",
-      desc: "Browse verified local experts in your area",
-    },
-    {
-      icon: MapPin,
-      title: "Send a Request",
-      desc: "Describe your needs and share your location",
-    },
-    {
-      icon: Clock,
-      title: "Get Matched",
-      desc: "Nearby professionals respond to your request",
-    },
-    {
-      icon: Star,
-      title: "Job Done",
-      desc: "Service completed, leave a review",
-    },
-  ];
+  {
+    icon: Users,
+    title: "Browse Professionals",
+    desc: "Discover skilled professionals and services available in your area",
+  },
+  {
+    icon: MapPin,
+    title: "View a Profile",
+    desc: "Check their services, experience, location, reviews, and availability",
+  },
+  {
+    icon: CheckCircle,
+    title: "Request a Service",
+    desc: "Choose the service you need and send a request directly to the professional",
+  },
+  {
+    icon: Star,
+    title: "Get the Job Done",
+    desc: "Communicate with the professional, complete the service, and leave a review",
+  },
+];
 
   return (
     <section className="bg-muted py-20">
@@ -286,6 +284,191 @@ function HowItWorksSection() {
               </p>
             </motion.div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+function AboutSection() {
+  return (
+    <section
+      id="about"
+      className="relative overflow-hidden bg-muted/40 py-14 sm:py-16"
+    >
+      {/* Decorative background */}
+      <div className="absolute -left-24 top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute -right-24 bottom-8 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        {/* Top heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+            <ShieldCheck className="h-4 w-4" />
+            About ProService
+          </span>
+
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Making Local Services
+            <span className="text-primary"> Easier & More Trusted</span>
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            ProService Skills Network connects customers with skilled local
+            professionals, making it easier to discover services, compare
+            professionals, communicate directly, and get the right help.
+          </p>
+        </motion.div>
+
+        {/* Main About Card */}
+        <div className="mt-8 grid items-center gap-7 lg:grid-cols-2">
+
+          {/* Left visual */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="relative"
+          >
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 p-6 shadow-xl sm:p-7">
+
+              {/* Decorative circles */}
+              <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-white/10" />
+              <div className="absolute -bottom-20 -left-10 h-44 w-44 rounded-full bg-white/10" />
+
+              <div className="relative">
+
+                <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+                  <Users className="h-7 w-7 text-white" />
+                </div>
+
+                <h3 className="mt-5 text-xl font-bold text-white sm:text-2xl">
+                  One Platform.
+                  <br />
+                  Many Skilled Professionals.
+                </h3>
+
+                <p className="mt-3 max-w-md text-sm leading-6 text-white/75">
+                  From home services and maintenance to technology,
+                  photography, and events, ProService helps customers find
+                  professionals in one convenient place.
+                </p>
+
+                {/* Real project information */}
+                <div className="mt-6">
+                  <div className="rounded-2xl bg-white/10 p-3.5 backdrop-blur-sm">
+                    <p className="text-base font-bold text-white">
+                      Qardho
+                    </p>
+
+                    <p className="mt-1 text-xs text-white/70">
+                      Current Local Focus
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right content */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <span className="text-sm font-semibold uppercase tracking-wider text-primary">
+              Why ProService?
+            </span>
+
+            <h3 className="mt-2 text-xl font-bold text-foreground sm:text-2xl">
+              Built to connect people with the right skills
+            </h3>
+
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              Finding a reliable professional should not be difficult.
+              ProService provides a simple digital space where customers can
+              discover skilled professionals and make informed decisions.
+            </p>
+
+            {/* Features */}
+            <div className="mt-5 space-y-3.5">
+
+              {/* Feature 1 */}
+              <div className="flex gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Trusted Professionals
+                  </h4>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground sm:text-sm">
+                    Customers can explore professional profiles, reviews,
+                    services, and verification information before choosing.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <MapPin className="h-5 w-5 text-primary" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Local & Convenient
+                  </h4>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground sm:text-sm">
+                    Discover professionals based on your city and neighborhood,
+                    making local service discovery easier.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Simple Service Experience
+                  </h4>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground sm:text-sm">
+                    Browse services, view profiles, send requests, communicate
+                    with professionals, and leave reviews.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Small CTA */}
+            <div className="mt-5">
+              <Button asChild>
+                <Link to="/services">
+                  Explore Services
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+
+          </motion.div>
         </div>
       </div>
     </section>
@@ -531,7 +714,7 @@ function CTASection() {
             asChild
             variant="hero-outline"
             size="xl"
-            className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            className="bg-primary-foreground text-primary font-semibold hover:bg-primary-foreground/90 hover:text-primary"
           >
             <Link to="/register">Offer Your Services</Link>
           </Button>

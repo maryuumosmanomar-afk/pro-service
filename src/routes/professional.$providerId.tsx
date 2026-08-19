@@ -10,6 +10,7 @@ import {
   BadgeCheck, Briefcase, MapPinned, MessageCircle, Heart,} from "lucide-react";
 import { BriefcaseBusiness, DollarSign, CircleCheckBig,} from "lucide-react";
 
+
 export const Route = createFileRoute("/professional/$providerId")({
   component: ProfessionalProfilePage,
 });
@@ -21,6 +22,7 @@ function ProfessionalProfilePage() {
   const [provider, setProvider] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
@@ -32,33 +34,47 @@ const [bookingError, setBookingError] = useState<string | null>(null);
 const [bookingSuccess, setBookingSuccess] = useState(false);
 const [averageRating, setAverageRating] = useState(0);
 const [reviewCount, setReviewCount] = useState(0);
+const [reviews, setReviews] = useState<any[]>([]);
+const [galleryImages, setGalleryImages] = useState<any[]>([]);
+const [serviceImages, setServiceImages] = useState<any[]>([]);
 
 const loadReviews = async () => {
   const { data, error } = await supabase
     .from("reviews")
-    .select("rating")
-    .eq("provider_id", providerId);
+    .select(`
+  rating,
+  comment,
+  created_at,
+  profiles:customer_id (
+    full_name,
+    avatar_URL
+  )
+`)
+ .eq("provider_id", providerId)
+.order("created_at", { ascending: false });
+   
 
   if (error) {
     console.log(error.message);
     return;
   }
 
-  const reviews = data || [];
+  const reviewsData = data || [];
+  setReviews(reviewsData);
 
-  setReviewCount(reviews.length);
+setReviewCount(reviewsData.length);
 
-  if (reviews.length === 0) {
-    setAverageRating(0);
-    return;
-  }
+if (reviewsData.length === 0) {
+  setAverageRating(0);
+  return;
+}
 
-  const total = reviews.reduce(
-    (sum, review) => sum + review.rating,
-    0
-  );
+const total = reviewsData.reduce(
+  (sum, review) => sum + review.rating,
+  0
+);
 
-  setAverageRating(total / reviews.length);
+setAverageRating(total / reviewsData.length);
 };
 
   useEffect(() => {
@@ -81,8 +97,10 @@ const loadReviews = async () => {
             bio,
             city,
             country,
+            role,
             is_verified,
-            created_at
+            created_at,
+            updated_at
           )
         `)
         .eq("id", providerId)
@@ -116,22 +134,69 @@ const loadReviews = async () => {
         console.log("Professional services error:", serviceError.message);
       } else {
         setServices(serviceData || []);
+
       }
+      const { data: imagesData, error: imagesError } = await supabase
+  .from("service_images")
+  .select(`
+    id,
+    image_url,
+    service_id
+  `);
+
+if (imagesError) {
+  console.log("Gallery error:", imagesError.message);
+} else {
+  console.log("Service Images:", imagesData);
+  setServiceImages(imagesData || []);
+}
+      const { data: imageData, error: imageError } = await supabase
+  .from("service_images")
+  .select(`
+    id,
+    image_url,
+    services!inner (
+      provider_id
+    )
+  `)
+  .eq("services.provider_id", providerId);
+
+if (imageError) {
+  console.log("Gallery error:", imageError.message);
+} else {
+  setGalleryImages(imageData || []);
+}
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: favoriteData } = await supabase
-          .from("favorites")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("provider_id", providerId)
-          .maybeSingle();
+  const { data: currentProfile, error: currentProfileError } =
+    await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-        setIsFavorite(!!favoriteData);
-      }
+  if (currentProfileError) {
+    console.log(
+      "Current user profile error:",
+      currentProfileError.message
+    );
+  } else {
+    setCurrentUserRole(currentProfile?.role || null);
+  }
+
+  const { data: favoriteData } = await supabase
+    .from("favorites")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("provider_id", providerId)
+    .maybeSingle();
+
+  setIsFavorite(!!favoriteData);
+}
       await loadReviews();
 
       setLoading(false);
@@ -296,6 +361,7 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
   }
 
   const profile = provider.profiles;
+const isCustomer = currentUserRole === "customer";
   const providerName = profile?.full_name || "Professional";
   const memberSince = profile?.created_at
   ? new Date(profile.created_at).getFullYear()
@@ -308,19 +374,21 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
     .slice(0, 2)
     .toUpperCase();
 
+    const fullStars = Math.floor(averageRating);
+const emptyStars = 5 - fullStars;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10">
-        <Link
-          to="/services"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Services
-        </Link>
-
+       <Link
+  to="/profile"
+  className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+>
+  <ArrowLeft className="h-4 w-4" />
+  Back to profile
+</Link>
         {/* Profile Header */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -373,24 +441,29 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
               </div>
             </div>
 
-            <Button
-              variant={isFavorite ? "default" : "outline"}
-              onClick={toggleFavorite}
-              disabled={favoriteLoading}
-            >
-              <Bookmark
-                className={`mr-2 h-4 w-4 ${
-                  isFavorite ? "fill-current" : ""
-                }`}
-              />
-              {isFavorite ? "Saved" : "Save Professional"}
-            </Button>
-            <Button
-  variant="outline"
-  onClick={sendMessageToProfessional}
->
-  Send Message
-</Button>
+            {isCustomer && (
+  <div className="flex gap-3">
+    <Button
+      variant={isFavorite ? "default" : "outline"}
+      onClick={toggleFavorite}
+      disabled={favoriteLoading}
+    >
+      <Bookmark
+        className={`mr-2 h-4 w-4 ${
+          isFavorite ? "fill-current" : ""
+        }`}
+      />
+      {isFavorite ? "Saved" : "Save Professional"}
+    </Button>
+
+    <Button
+      variant="outline"
+      onClick={sendMessageToProfessional}
+    >
+      Send Message
+    </Button>
+  </div>
+)}
           </div>
 
           {/* Professional Details */}
@@ -405,15 +478,31 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
     Rating
   </p>
 
-  <p className="mt-1 text-xl font-bold">
-    {reviewCount > 0
-      ? averageRating.toFixed(1)
-      : "--"}
-  </p>
+  <div className="mt-2 flex items-center gap-1">
+  {[...Array(fullStars)].map((_, i) => (
+    <Star
+      key={`full-${i}`}
+      className="h-4 w-4 fill-yellow-400 text-yellow-400"
+    />
+  ))}
 
-  <p className="text-sm text-gray-500">
-    {reviewCount} Review{reviewCount !== 1 ? "s" : ""}
-  </p>
+  {[...Array(emptyStars)].map((_, i) => (
+    <Star
+      key={`empty-${i}`}
+      className="h-4 w-4 text-gray-300"
+    />
+  ))}
+</div>
+
+<p className="mt-2 text-2xl font-bold">
+  {reviewCount > 0
+    ? averageRating.toFixed(1)
+    : "--"}
+</p>
+
+<p className="text-sm text-gray-500">
+  {reviewCount} Reviews
+</p> 
 
 </div>
            <div className="rounded-2xl  border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -502,7 +591,38 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
           )}  
         </div>
 
+      {/* Work Gallery */}
+{/*<div className="mt-10">
+  <h2 className="text-2xl font-bold">
+    Work Gallery
+  </h2>
+
+  {galleryImages.length === 0 ? (
+    <p className="mt-4 text-sm text-muted-foreground">
+      No work images uploaded yet.
+    </p>
+  ) : (
+    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {galleryImages.map((image) => (
+        <div
+          key={image.id}
+          className="overflow-hidden rounded-xl border bg-card shadow-sm"
+        >
+          <img
+            src={image.image_url}
+            alt="Professional work"
+            className="h-52 w-full object-cover transition duration-300 hover:scale-105"
+          />
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+*/}
+
         {/* Services */}
+
+        
         <div className="mt-10">
           <h2 className="text-2xl font-bold">
             Services by {providerName}
@@ -516,24 +636,44 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((service) => (
                 <div
-                  key={service.id}
-                  className="rounded-xl border border-border bg-card p-5 shadow-card"
-                >
-                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
-                    {service.categories?.name || "Service"}
-                  </span>
+  key={service.id}
+  className="group rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+>
+ <div className="mb-4 h-20 w-full overflow-hidden rounded-xl bg-muted">
+  {serviceImages
+    .filter((img) => img.service_id === service.id)
+    .map((img) => (
+      <img
+        key={img.id}
+        src={img.image_url}
+        alt={service.Title}
+        className="h-full w-full object-cover"
+      />
+    ))}
 
-                  <h3 className="mt-3 font-semibold">
-                    {service.Title}
-                  </h3>
+  {serviceImages.filter(
+    (img) => img.service_id === service.id
+  ).length === 0 && (
+    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+      No image
+    </div>
+  )}
+</div>
+                 <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+  {service.categories?.name || "Service"}
+</span>
+
+                  <h3 className="mt-3 text-lg font-bold">
+  {service.Title}
+</h3>
 
                   {service.description && (
-                    <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                      {service.description}
-                    </p>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+  {service.description}
+</p>
                   )}
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-5 flex items-center justify-between">
                     <span className="font-bold text-primary">
                       {service.currency || "USD"} {service.price}
                     </span>
@@ -546,7 +686,61 @@ const handleBookingSubmit = async (e: React.FormEvent) => {
               ))}
             </div>
           )}
+        </div> 
+        {/* Reviews */}
+<div className="mt-12">
+  <h2 className="text-2xl font-bold">
+    Customer Reviews
+  </h2>
+
+  {reviews.length === 0 ? (
+    <p className="mt-4 text-muted-foreground">
+      No reviews yet.
+    </p>
+  ) : (
+    <div className="mt-6 space-y-4">
+      {reviews.map((review, index) => (
+        <div
+          key={index}
+          className="rounded-xl border bg-card p-5"
+        >
+          <div className="flex items-center gap-3">
+            {review.profiles?.avatar_URL ? (
+              <img
+                src={review.profiles.avatar_URL}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white font-bold">
+                {review.profiles?.full_name?.charAt(0) || "U"}
+              </div>
+            )}
+
+            <div>
+              <h4 className="font-semibold">
+                {review.profiles?.full_name || "Customer"}
+              </h4>
+
+              <p className="text-sm text-muted-foreground">
+                ⭐ {review.rating}/5
+              </p>
+            </div>
+          </div>
+
+          {review.comment && (
+            <p className="mt-4 text-muted-foreground">
+              {review.comment}
+            </p>
+          )}
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            {new Date(review.created_at).toLocaleDateString()}
+          </p>
         </div>
+      ))}
+    </div>
+  )}
+</div>
       </main>
       {showBookingModal && selectedService && (
   <div

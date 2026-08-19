@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -33,6 +34,8 @@ function ServicesPage() {
   const [loadingServices, setLoadingServices] = useState(true);
 
   const [servicesError, setServicesError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<"customer" | "professional">("customer");
+  
 
   // Load categories from Supabase
   useEffect(() => {
@@ -56,6 +59,29 @@ function ServicesPage() {
 
     loadCategories();
   }, []);
+  useEffect(() => {
+  const loadUserRole = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role === "professional") {
+      setUserRole("professional");
+    } else {
+      setUserRole("customer");
+    }
+  };
+
+  loadUserRole();
+}, []);
 
   // Load services with provider and profile information
   useEffect(() => {
@@ -129,29 +155,48 @@ const [bookingError, setBookingError] = useState<string | null>(null);
 const [bookingSuccess, setBookingSuccess] = useState(false);
 const [favoriteProviders, setFavoriteProviders] = useState<string[]>([]);
 const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
-  const filtered = services.filter((service) => {
-    const provider = service.provider_profiles;
-    const profile = provider?.profiles;
-    const category = service.categories;
+ const filtered = services.filter((service) => {
+  const provider = service.provider_profiles;
+  const profile = provider?.profiles;
+  const category = service.categories;
 
-    const providerName = profile?.full_name || "";
-    const providerTitle = provider?.title || "";
-    const serviceTitle = service.Title || "";
-    const categoryName = category?.name || "";
+  const providerName = profile?.full_name || "";
+  const providerTitle = provider?.title || "";
+  const serviceTitle = service.Title || "";
+  const categoryName = category?.name || "";
 
-    const matchesCategory =
-      activeCategory === "all" || categoryName === activeCategory;
+  const matchesCategory =
+    activeCategory === "all" || categoryName === activeCategory;
 
-    const searchText = searchQuery.toLowerCase();
+  const searchText = searchQuery.toLowerCase();
 
-    const matchesSearch =
-      providerName.toLowerCase().includes(searchText) ||
-      providerTitle.toLowerCase().includes(searchText) ||
-      serviceTitle.toLowerCase().includes(searchText) ||
-      categoryName.toLowerCase().includes(searchText);
+  const matchesSearch =
+    providerName.toLowerCase().includes(searchText) ||
+    providerTitle.toLowerCase().includes(searchText) ||
+    serviceTitle.toLowerCase().includes(searchText) ||
+    categoryName.toLowerCase().includes(searchText);
 
-    return matchesCategory && matchesSearch;
-  });
+  return matchesCategory && matchesSearch;
+});
+
+const groupedProviders = Object.values(
+  filtered.reduce((acc: Record<string, any>, service) => {
+    const providerId = service.provider_profiles?.id;
+
+    if (!providerId) return acc;
+
+    if (!acc[providerId]) {
+      acc[providerId] = {
+        provider: service.provider_profiles,
+        services: [],
+      };
+    }
+
+    acc[providerId].services.push(service);
+
+    return acc;
+  }, {})
+);
 
 const openBookingModal = (service: any) => {
   setSelectedService(service);
@@ -358,236 +403,195 @@ const toggleFavorite = async (providerId: string) => {
             </div>
           )}
 
-        {/* Services Grid */}
-        {!loadingServices &&
-          !servicesError &&
-          filtered.length > 0 && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((service, i) => {
-                const provider = service.provider_profiles;
-                const profile = provider?.profiles;
-                const category = service.categories;
+   {/* Services Grid */}
+{!loadingServices &&
+  !servicesError &&
+  groupedProviders.length > 0 && (
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {groupedProviders.map((item: any, i) => {
+        const provider = item.provider;
+        const profile = provider?.profiles;
+        const providerServices = item.services || [];
 
-                const providerName =
-                  profile?.full_name || "Unknown Professional";
+        const providerName =
+          profile?.full_name || "Unknown Professional";
 
-                const providerTitle =
-                  provider?.title || "Professional";
+        const providerTitle =
+          provider?.title || "Professional";
 
-                const categoryName =
-                  category?.name || "Uncategorized";
+        const location = provider?.neighborhood
+          ? `${provider.neighborhood}, ${provider.city}`
+          : provider?.city || "Qardho";
 
-                const location =
-                provider?.neighborhood
-                 ? `${provider.neighborhood}, ${provider.city}`
-                    : "Qardho";
+        const avatar = profile?.avatar_URL;
 
-                const avatar =
-                  profile?.avatar_URL;
+        const initials = providerName
+          .split(" ")
+          .map((name: string) => name[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
 
-                const initials = providerName
-                  .split(" ")
-                  .map((name: string) => name[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase();
+        const visibleServices = providerServices.slice(0, 3);
+        const remainingServices = providerServices.length - 3;
 
-                return (
-                  <motion.div
-                    key={service.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="group rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
-                  >
-                    {/* Provider Information */}
-                    <div className="flex items-center justify-between gap-3">
-  <div className="flex items-center gap-3"></div>
-                      {avatar ? (
-                        <img
-                          src={avatar}
-                          alt={providerName}
-                          className="h-12 w-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
-                          {initials}
-                        </div>
-                      )}
-
-                      <div>
-                        <h3 className="font-semibold text-card-foreground">
-                          {providerName}
-                        </h3>
-
-                        <p className="text-xs text-muted-foreground">
-                          {providerTitle}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-  type="button"
-  onClick={() => toggleFavorite(provider.id)}
-  disabled={favoriteLoading === provider.id}
-  className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background transition hover:bg-muted disabled:opacity-50"
-  title={
-    favoriteProviders.includes(provider.id)
-      ? "Remove from Saved Pros"
-      : "Save Professional"
-  }
->
-  <Bookmark
-    className={`h-4 w-4 ${
-      favoriteProviders.includes(provider.id)
-        ? "fill-primary text-primary"
-        : "text-muted-foreground"
-    }`}
-  />
-</button>
-
-                    {/* Service Category */}
-                    <div className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      {categoryName}
-                    </div>
-
-                    {/* Service Title */}
-                    <h3 className="mt-3 font-semibold text-card-foreground">
-                      {service.Title}
-                    </h3>
-
-                    {/* Description */}
-                    {service.description && (
-                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {service.description}
-                      </p>
-                    )}
-
-                    {/* Location */}
-                    <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {location}
-                    </div>
-
-                    {/* Price */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-sm font-bold text-primary">
-                        {service.currency || "USD"}{" "}
-                        {service.price ?? 0}
-                      </span>
-
-                      {profile?.is_verified && (
-                        <span className="text-xs font-medium text-green-600">
-                          Verified
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Request Service */}
-                   <Button
-  variant="default"
-  size="sm"
-  className="mt-4 w-full"
-  onClick={() => openBookingModal(service)}
->
-  Request Service
-</Button>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-      </div>
-{showBookingModal && selectedService && (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4"
-    onClick={() => setShowBookingModal(false)}
-  >
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-elevated"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {bookingSuccess ? (
-        <div className="text-center py-6">
-          <h2 className="text-xl font-bold text-card-foreground">
-            Codsigaaga waa la diray! ✅
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Professional-ku wuu ku soo jawaabi doonaa dhawaan.
-          </p>
-          <Button
-            className="mt-4 w-full"
-            onClick={() => setShowBookingModal(false)}
+        return (
+          <motion.div
+            key={provider.id}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="group rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
           >
-            Xir
-          </Button>
-        </div>
-      ) : (
-        <>
-          <h2 className="text-xl font-bold text-card-foreground">
-            Request Service
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {selectedService.Title}
-          </p>
+            {/* Provider Header */}
+            <div className="flex items-start justify-between gap-3">
+              <Link
+                to="/professional/$providerId"
+                params={{
+                  providerId: String(provider.id),
+                }}
+                className="flex min-w-0 items-center gap-3 group/profile"
+              >
+                {/* Avatar */}
+                {avatar ? (
+                  <img
+                    src={avatar}
+                    alt={providerName}
+                    className="h-12 w-12 shrink-0 rounded-full object-cover transition-transform duration-200 group-hover/profile:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
+                    {initials}
+                  </div>
+                )}
 
-          <form className="mt-4 space-y-4" onSubmit={handleBookingSubmit}>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
-                Taariikhda aad rabto
-              </label>
-              <input
-                type="date"
-                value={bookingDate}
-                onChange={(e) => setBookingDate(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
+                {/* Name & Title */}
+                <div className="min-w-0">
+                  <h3 className="truncate font-semibold text-card-foreground group-hover/profile:text-primary transition-colors">
+                    {providerName}
+                  </h3>
+
+                  <p className="truncate text-xs text-muted-foreground">
+                    {providerTitle}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Favorite */}
+              <button
+                type="button"
+                onClick={() => toggleFavorite(provider.id)}
+                disabled={favoriteLoading === provider.id}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background transition hover:bg-muted disabled:opacity-50"
+                title={
+                  favoriteProviders.includes(provider.id)
+                    ? "Remove from Saved Pros"
+                    : "Save Professional"
+                }
+              >
+                <Bookmark
+                  className={`h-4 w-4 ${
+                    favoriteProviders.includes(provider.id)
+                      ? "fill-primary text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                />
+              </button>
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
-                Fariin (ikhtiyaari)
-              </label>
-              <textarea
-                value={bookingMessage}
-                onChange={(e) => setBookingMessage(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                rows={3}
-                placeholder="Sharax waxa aad u baahan tahay..."
-              />
+            {/* Service Count */}
+            <div className="mt-4">
+              <span className="text-sm font-semibold text-card-foreground">
+                {providerServices.length}{" "}
+                {providerServices.length === 1
+                  ? "Service"
+                  : "Services"}
+              </span>
+
+              <span className="mx-2 text-muted-foreground">
+                •
+              </span>
+
+              <span className="text-sm text-muted-foreground">
+                {provider?.neighborhood || "Qardho"}
+              </span>
             </div>
 
-            {bookingError && (
-              <p className="text-sm text-destructive">{bookingError}</p>
+            {/* Services Preview */}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {visibleServices.map((service: any) => (
+                <span
+                  key={service.id}
+                  className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                >
+                  {service.Title}
+                </span>
+              ))}
+
+              {remainingServices > 0 && (
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  +{remainingServices} more
+                </span>
+              )}
+            </div>
+
+            {/* Verified */}
+            {profile?.is_verified && (
+              <div className="mt-3">
+                <span className="text-xs font-medium text-green-600">
+                  ✓ Verified
+                </span>
+              </div>
             )}
 
-            <div className="flex gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowBookingModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="hero"
-                className="flex-1"
-                disabled={bookingSubmitting}
-              >
-                {bookingSubmitting ? "Diraya..." : "Send Request"}
-              </Button>
+            {/* Rating & Reviews */}
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <span className="flex items-center gap-1 font-semibold text-card-foreground">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                {provider?.rating ?? "5.0"}
+              </span>
+
+              <span className="text-muted-foreground">
+                ({provider?.review_count ?? 0} reviews)
+              </span>
             </div>
-          </form>
-        </>
-      )}
-    </motion.div>
-  </div>
-)}
+
+            {/* Location & Hourly Rate */}
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                {location}
+              </div>
+
+              <span className="text-sm font-bold text-primary">
+                ${provider?.hourly_rate ?? 0}/hr
+              </span>
+            </div>
+
+            {/* View Profile */}
+            <Link
+              to="/professional/$providerId"
+              params={{
+                providerId: String(provider.id),
+              }}
+              className="mt-4 block"
+            >
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full"
+              >
+                View Profile
+              </Button>
+            </Link>
+          </motion.div>
+        );
+      })}
+    </div>
+  )}
+</div>
+<DashboardBottomNav role={userRole} />
       <Footer />
     </div>
   );
-}
+  }

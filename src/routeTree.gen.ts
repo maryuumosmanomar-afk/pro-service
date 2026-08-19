@@ -16,6 +16,7 @@ import { Route as ProfessionalDashboardRouteImport } from './routes/professional
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CustomerDashboardRouteImport } from './routes/customer-dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminDashboardRouteImport } from './routes/admin-dashboard'
 import { Route as AddServiceRouteImport } from './routes/add-service'
 import { Route as IndexRouteImport } from './routes/index'
@@ -56,6 +57,11 @@ const CustomerDashboardRoute = CustomerDashboardRouteImport.update({
   path: '/customer-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/admin-dashboard',
   path: '/admin-dashboard',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add-service': typeof AddServiceRoute
   '/admin-dashboard': typeof AdminDashboardRoute
+  '/contact': typeof ContactRoute
   '/customer-dashboard': typeof CustomerDashboardRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add-service': typeof AddServiceRoute
   '/admin-dashboard': typeof AdminDashboardRoute
+  '/contact': typeof ContactRoute
   '/customer-dashboard': typeof CustomerDashboardRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/add-service': typeof AddServiceRoute
   '/admin-dashboard': typeof AdminDashboardRoute
+  '/contact': typeof ContactRoute
   '/customer-dashboard': typeof CustomerDashboardRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/add-service'
     | '/admin-dashboard'
+    | '/contact'
     | '/customer-dashboard'
     | '/login'
     | '/messages'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/add-service'
     | '/admin-dashboard'
+    | '/contact'
     | '/customer-dashboard'
     | '/login'
     | '/messages'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/add-service'
     | '/admin-dashboard'
+    | '/contact'
     | '/customer-dashboard'
     | '/login'
     | '/messages'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddServiceRoute: typeof AddServiceRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  ContactRoute: typeof ContactRoute
   CustomerDashboardRoute: typeof CustomerDashboardRoute
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin-dashboard': {
       id: '/admin-dashboard'
       path: '/admin-dashboard'
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddServiceRoute: AddServiceRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  ContactRoute: ContactRoute,
   CustomerDashboardRoute: CustomerDashboardRoute,
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,

@@ -21,6 +21,7 @@ function AddServicePage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   // Soo qaad categories-ka dhabta ah
   useEffect(() => {
@@ -67,10 +68,14 @@ function AddServicePage() {
 
     // 2. Soo qaad provider_profiles.id (provider_id) ee user-kan
     const { data: providerData, error: providerError } = await supabase
-      .from("provider_profiles")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+  .from("provider_profiles")
+  .select("id, user_id")
+  .eq("user_id", user.id)
+  .single();
+
+console.log("AUTH USER ID:", user.id);
+console.log("PROVIDER DATA:", providerData);
+console.log("PROVIDER ERROR:", providerError);
 
     if (providerError || !providerData) {
       setSubmitError(
@@ -80,16 +85,48 @@ function AddServicePage() {
       return;
     }
 
+    let imageUrl = null;
+
+if (selectedImage) {
+  const fileExt = selectedImage.name.split(".").pop();
+
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("service-images")
+    .upload(fileName, selectedImage);
+
+  if (uploadError) {
+    console.log("Image upload error:", uploadError.message);
+    setSubmitError(uploadError.message);
+    setSubmitting(false);
+    return;
+  }
+
+  const { data } = supabase.storage
+    .from("service-images")
+    .getPublicUrl(fileName);
+
+  imageUrl = data.publicUrl;
+}
+
     // 3. Insert service-ka cusub
-    const { error: insertError } = await supabase.from("services").insert({
-      Title: title,
-      description: description,
-      price: Number(price),
-      category_id: categoryId,
-      provider_id: providerData.id,
-      currency: "USD",
-      status: "active",
-    });
+    const { data: serviceData, error: insertError } = await supabase
+  .from("services")
+  .insert({
+    Title: title,
+    description: description,
+    price: Number(price),
+    category_id: categoryId,
+    provider_id: providerData.id,
+    currency: "USD",
+    status: "active",
+  })
+  .select()
+  .single();
+
+
+
 
     if (insertError) {
       console.log("Insert error:", insertError.message);
@@ -97,6 +134,22 @@ function AddServicePage() {
       setSubmitting(false);
       return;
     }
+ if (imageUrl) {
+  console.log("IMAGE URL:", imageUrl);
+  console.log("SERVICE ID:", serviceData.id);
+
+  const { data: imageData, error: imageError } = await supabase
+    .from("service_images")
+    .insert({
+      service_id: serviceData.id,
+      image_url: imageUrl,
+    })
+    .select()
+    .single();
+
+  console.log("SERVICE IMAGE DATA:", imageData);
+  console.log("SERVICE IMAGE ERROR:", imageError);
+}
 
     // 4. Guuleysi — u wareeji Professional Dashboard
     setSubmitting(false);
@@ -158,6 +211,22 @@ function AddServicePage() {
               ))}
             </select>
           </div>
+          <div>
+  <label className="block mb-2 font-medium">
+    Service Image
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        setSelectedImage(e.target.files[0]);
+      }
+    }}
+    className="w-full rounded-lg border p-3"
+  />
+</div>
 
           {submitError && (
             <p className="text-sm text-destructive">{submitError}</p>

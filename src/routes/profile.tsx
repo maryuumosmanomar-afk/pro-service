@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { qardhoNeighborhoods } from "@/constants/locations";
@@ -9,6 +9,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
@@ -35,17 +36,22 @@ const navigate = useNavigate();
       return;
     }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+   const { data, error } = await supabase
+  .from("profiles")
+  .select(`
+    *,
+    provider_profiles (
+      id
+    )
+  `)
+  .eq("id", user.id)
+  .single();
 
-    if (error) {
-      console.log(error.message);
-    } else {
-      setProfile(data);
-    }
+if (error) {
+  console.log(error.message);
+} else {
+  setProfile(data);
+}
 
     setLoading(false);
   };
@@ -161,7 +167,7 @@ const updateNeighborhood = async (
   }
 };
   return (
-    <div className="min-h-screen bg-gray-100 p-5">
+    <div className="min-h-screen bg-gray-100 p-5 pb-24">
 
       <div className="mx-auto max-w-md rounded-2xl bg-white p-6 shadow">
 
@@ -284,12 +290,27 @@ const updateNeighborhood = async (
     ))}
   </select>
    </div>
+   {profile?.role === "professional" &&
+  profile?.provider_profiles?.id && (
+    <Link
+      to="/professional/$providerId"
+      params={{
+        providerId: String(profile.provider_profiles.id),
+      }}
+      className="mt-6 block w-full rounded-2xl bg-indigo-500 py-3 text-center font-semibold text-white transition hover:bg-indigo-600"
+    >
+      View My Professional Profile
+    </Link>
+  )}
    <button
   onClick={handleLogout}
   className="mt-6 w-full rounded-2xl bg-blue-500 py-3 font-semibold text-white transition hover:bg-red-600"
 >
   Logout
 </button>
+<DashboardBottomNav
+  role={profile?.role === "professional" ? "professional" : "customer"}
+/>
 
         
 

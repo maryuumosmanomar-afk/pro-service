@@ -381,16 +381,7 @@ useEffect(() => {
               <span className={available ? "text-success font-medium" : "text-muted-foreground"}>
                 {available ? "Available" : "Offline"}
               </span>
-           <Button asChild variant="ghost" size="sm">
-  <Link
-    to="/messages"
-    search={{
-      receiverId: undefined,
-    }}
-  >
-    <MessageCircle className="h-5 w-5" />
-  </Link>
-</Button>
+       
             </button>
             <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
           </div>
