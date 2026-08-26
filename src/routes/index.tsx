@@ -4,8 +4,6 @@ import {
   ArrowRight,
   MapPin,
   Star,
-  Shield,
-  Clock,
   Users,
   CheckCircle,
   ShieldCheck,
@@ -15,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
+import homePageImage from "@/img/home page.webp";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/")({
@@ -59,23 +58,14 @@ function HeroSection() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=2000&q=80')",
-        }}
+  backgroundImage: "url('/img/home page.webp')",
+}}
       />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-primary/80" />
 
-      {/* Decorative pattern */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+     
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -514,38 +504,49 @@ function FeaturedProfessionals() {
       }
 
       // Hel average rating + review count professional kasta
-      const professionalsWithRatings = await Promise.all(
-        data.map(async (provider) => {
-          const { data: reviews, error: reviewsError } = await supabase
-            .from("reviews")
-            .select("rating")
-            .eq("provider_id", provider.id);
+     const providerIds = data.map((provider) => provider.id);
 
-          if (reviewsError) {
-            console.log(
-              "Reviews error:",
-              reviewsError.message
-            );
-          }
+const { data: reviews, error: reviewsError } = await supabase
+  .from("reviews")
+  .select("provider_id, rating")
+  .in("provider_id", providerIds);
 
-          const ratings = reviews || [];
+if (reviewsError) {
+  console.log("Reviews error:", reviewsError.message);
+}
 
-          const averageRating =
-            ratings.length > 0
-              ? ratings.reduce(
-                  (total, review) =>
-                    total + Number(review.rating || 0),
-                  0
-                ) / ratings.length
-              : 0;
+const professionalsWithRatings = data
+  .map((provider) => {
+    const providerReviews =
+      reviews?.filter(
+        (review) => review.provider_id === provider.id
+      ) || [];
 
-          return {
-            ...provider,
-            averageRating,
-            reviewCount: ratings.length,
-          };
-        })
-      );
+    const reviewCount = providerReviews.length;
+
+    const averageRating =
+      reviewCount > 0
+        ? providerReviews.reduce(
+            (total, review) =>
+              total + Number(review.rating || 0),
+            0
+          ) / reviewCount
+        : 0;
+
+    return {
+      ...provider,
+      averageRating,
+      reviewCount,
+    };
+  })
+  .sort((a, b) => {
+    if (b.averageRating !== a.averageRating) {
+      return b.averageRating - a.averageRating;
+    }
+
+    return b.reviewCount - a.reviewCount;
+  })
+  .slice(0, 3);
 
       setProfessionals(professionalsWithRatings);
       setLoading(false);

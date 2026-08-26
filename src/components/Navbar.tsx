@@ -1,10 +1,28 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { Menu, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setIsLoggedIn(!!user);
+    };
+
+    checkUser();
+  }, []);
+
+  if (isLoggedIn) {
+    return null;
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">

@@ -1,14 +1,22 @@
-import { type FormEvent } from "react";
+
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Star, Bookmark, ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Bookmark,
+  Briefcase,
+  BriefcaseBusiness,
+  CircleCheckBig,
+  DollarSign,
+  MapPin,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
-import {
-  BadgeCheck, Briefcase, MapPinned, MessageCircle, Heart,} from "lucide-react";
-import { BriefcaseBusiness, DollarSign, CircleCheckBig,} from "lucide-react";
+
 
 
 export const Route = createFileRoute("/professional/$providerId")({
@@ -35,13 +43,13 @@ const [bookingSuccess, setBookingSuccess] = useState(false);
 const [averageRating, setAverageRating] = useState(0);
 const [reviewCount, setReviewCount] = useState(0);
 const [reviews, setReviews] = useState<any[]>([]);
-const [galleryImages, setGalleryImages] = useState<any[]>([]);
 const [serviceImages, setServiceImages] = useState<any[]>([]);
 
 const loadReviews = async () => {
   const { data, error } = await supabase
     .from("reviews")
     .select(`
+      id,
   rating,
   comment,
   created_at,
@@ -54,10 +62,10 @@ const loadReviews = async () => {
 .order("created_at", { ascending: false });
    
 
-  if (error) {
-    console.log(error.message);
-    return;
-  }
+ if (error) {
+  console.log("Reviews error:", error.message);
+  return;
+}
 
   const reviewsData = data || [];
   setReviews(reviewsData);
@@ -70,9 +78,9 @@ if (reviewsData.length === 0) {
 }
 
 const total = reviewsData.reduce(
-  (sum, review) => sum + review.rating,
+  (sum, review) => sum + Number(review.rating || 0),
   0
-);
+); 
 
 setAverageRating(total / reviewsData.length);
 };
@@ -96,11 +104,13 @@ setAverageRating(total / reviewsData.length);
             avatar_URL,
             bio,
             city,
+            neighborhood,
             country,
             role,
             is_verified,
             created_at,
             updated_at
+             
           )
         `)
         .eq("id", providerId)
@@ -134,38 +144,24 @@ setAverageRating(total / reviewsData.length);
         console.log("Professional services error:", serviceError.message);
       } else {
         setServices(serviceData || []);
+        const serviceIds = (serviceData || []).map((service) => service.id);
+
+if (serviceIds.length > 0) {
+  const { data: imagesData, error: imagesError } = await supabase
+    .from("service_images")
+    .select("id, image_url, service_id")
+    .in("service_id", serviceIds);
+
+  if (imagesError) {
+    console.log("Service images error:", imagesError.message);
+  } else {
+    setServiceImages(imagesData || []);
+  }
+} else {
+  setServiceImages([]);
+}
 
       }
-      const { data: imagesData, error: imagesError } = await supabase
-  .from("service_images")
-  .select(`
-    id,
-    image_url,
-    service_id
-  `);
-
-if (imagesError) {
-  console.log("Gallery error:", imagesError.message);
-} else {
-  console.log("Service Images:", imagesData);
-  setServiceImages(imagesData || []);
-}
-      const { data: imageData, error: imageError } = await supabase
-  .from("service_images")
-  .select(`
-    id,
-    image_url,
-    services!inner (
-      provider_id
-    )
-  `)
-  .eq("services.provider_id", providerId);
-
-if (imageError) {
-  console.log("Gallery error:", imageError.message);
-} else {
-  setGalleryImages(imageData || []);
-}
 
       const {
         data: { user },
@@ -273,6 +269,10 @@ const sendMessageToProfessional = () => {
 const handleBookingSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setBookingError(null);
+  if (!selectedService) {
+  setBookingError("Service lama dooran.");
+  return;
+}
 
   if (!bookingDate) {
     setBookingError("Fadlan dooro taariikh.");
@@ -382,13 +382,14 @@ const emptyStars = 5 - fullStars;
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10">
-       <Link
-  to="/profile"
+       <button
+  type="button"
+  onClick={() => window.history.back()}
   className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 >
   <ArrowLeft className="h-4 w-4" />
-  Back to profile
-</Link>
+  Back
+</button>
         {/* Profile Header */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -592,101 +593,97 @@ const emptyStars = 5 - fullStars;
         </div>
 
       {/* Work Gallery */}
-{/*<div className="mt-10">
+
+{/* Services */}
+
+<div className="mt-10">
   <h2 className="text-2xl font-bold">
-    Work Gallery
+    Services by {providerName}
   </h2>
 
-  {galleryImages.length === 0 ? (
-    <p className="mt-4 text-sm text-muted-foreground">
-      No work images uploaded yet.
+  {services.length === 0 ? (
+    <p className="mt-6 text-sm text-muted-foreground">
+      This professional has no active services yet.
     </p>
   ) : (
-    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {galleryImages.map((image) => (
+    <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {services.map((service) => (
         <div
-          key={image.id}
-          className="overflow-hidden rounded-xl border bg-card shadow-sm"
+          key={service.id}
+          className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-          <img
-            src={image.image_url}
-            alt="Professional work"
-            className="h-52 w-full object-cover transition duration-300 hover:scale-105"
-          />
+          {/* Service Image */}
+          <div className="relative h-48 w-full overflow-hidden bg-muted">
+            {serviceImages.find(
+              (img) => img.service_id === service.id
+            ) ? (
+              <img
+                src={
+                  serviceImages.find(
+                    (img) => img.service_id === service.id
+                  ).image_url
+                }
+                alt={service.Title}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                No image
+              </div>
+            )}
+          </div>
+
+          {/* Service Content */}
+          <div className="p-4">
+            {/* Category */}
+            <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              {service.categories?.name || "Service"}
+            </span>
+
+            {/* Title */}
+            <h3 className="mt-3 text-lg font-bold text-card-foreground">
+              {service.Title}
+            </h3>
+
+            {/* Description */}
+            {service.description && (
+              <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                {service.description}
+              </p>
+            )}
+
+            {/* Price + Button */}
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <span className="font-bold text-primary">
+                {service.currency || "USD"} {service.price}
+              </span>
+
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!currentUserRole) {
+                    navigate({ to: "/login" });
+                    return;
+                  }
+
+                  if (currentUserRole !== "customer") {
+                    return;
+                  }
+
+                  openBookingModal(service);
+                }}
+              >
+                Request Service
+              </Button>
+            </div>
+          </div>
         </div>
       ))}
     </div>
   )}
 </div>
-*/}
-
-        {/* Services */}
-
-        
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold">
-            Services by {providerName}
-          </h2>
-
-          {services.length === 0 ? (
-            <p className="mt-6 text-sm text-muted-foreground">
-              This professional has no active services yet.
-            </p>
-          ) : (
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {services.map((service) => (
-                <div
-  key={service.id}
-  className="group rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
->
- <div className="mb-4 h-20 w-full overflow-hidden rounded-xl bg-muted">
-  {serviceImages
-    .filter((img) => img.service_id === service.id)
-    .map((img) => (
-      <img
-        key={img.id}
-        src={img.image_url}
-        alt={service.Title}
-        className="h-full w-full object-cover"
-      />
-    ))}
-
-  {serviceImages.filter(
-    (img) => img.service_id === service.id
-  ).length === 0 && (
-    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-      No image
-    </div>
-  )}
-</div>
-                 <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-  {service.categories?.name || "Service"}
-</span>
-
-                  <h3 className="mt-3 text-lg font-bold">
-  {service.Title}
-</h3>
-
-                  {service.description && (
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
-  {service.description}
-</p>
-                  )}
-
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="font-bold text-primary">
-                      {service.currency || "USD"} {service.price}
-                    </span>
-
-                   <Button size="sm" onClick={() => openBookingModal(service)}>
-  Request Service
-</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div> 
+     
         {/* Reviews */}
 <div className="mt-12">
   <h2 className="text-2xl font-bold">
@@ -699,17 +696,19 @@ const emptyStars = 5 - fullStars;
     </p>
   ) : (
     <div className="mt-6 space-y-4">
-      {reviews.map((review, index) => (
+      {reviews.map((review) => (
         <div
-          key={index}
+          key={review.id}
           className="rounded-xl border bg-card p-5"
         >
           <div className="flex items-center gap-3">
             {review.profiles?.avatar_URL ? (
               <img
-                src={review.profiles.avatar_URL}
-                className="h-12 w-12 rounded-full object-cover"
-              />
+  src={review.profiles.avatar_URL}
+  alt={review.profiles?.full_name || "Customer"}
+  loading="lazy"
+  className="h-12 w-12 rounded-full object-cover"
+/>
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white font-bold">
                 {review.profiles?.full_name?.charAt(0) || "U"}
@@ -773,6 +772,7 @@ const emptyStars = 5 - fullStars;
                 type="date"
                 value={bookingDate}
                 onChange={(e) => setBookingDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm"
                 required
               />

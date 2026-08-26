@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Inbox, CheckCircle, DollarSign, Star, MapPin, ToggleLeft, ToggleRight, LogOut, Phone } from "lucide-react";
+import { Inbox, CheckCircle, DollarSign, Star, MapPin, ToggleLeft, ToggleRight, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { MessageCircle } from "lucide-react";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 export const Route = createFileRoute("/professional-dashboard")({
@@ -383,7 +382,7 @@ useEffect(() => {
               </span>
        
             </button>
-            <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
+            
           </div>
         </div>
       </header>

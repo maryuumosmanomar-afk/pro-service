@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Send, Bookmark, Bell, Clock, MapPin, Plus, Star, LogOut } from "lucide-react";
+import { Send, Bookmark, Bell, Clock, MapPin, Plus, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { MessageCircle } from "lucide-react";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
 
 
@@ -383,7 +382,7 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
 </span>
 
 
-            <Button asChild variant="ghost" size="sm"><Link to="/"><LogOut className="h-4 w-4" /></Link></Button>
+           
           </div>
         </div>
       </header>

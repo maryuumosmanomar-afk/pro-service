@@ -34,7 +34,9 @@ function ServicesPage() {
   const [loadingServices, setLoadingServices] = useState(true);
 
   const [servicesError, setServicesError] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<"customer" | "professional">("customer");
+ const [userRole, setUserRole] = useState<
+  "guest" | "customer" | "professional"
+>("guest");
   
 
   // Load categories from Supabase
@@ -65,7 +67,10 @@ function ServicesPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+  setUserRole("guest");
+  return;
+    }
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -85,64 +90,139 @@ function ServicesPage() {
 
   // Load services with provider and profile information
   useEffect(() => {
-    const loadServices = async () => {
-      setLoadingServices(true);
-      setServicesError(null);
+  const loadServices = async () => {
+    setLoadingServices(true);
+    setServicesError(null);
 
-      const { data, error } = await supabase
-        .from("services")
-        .select(`
+    // 1. Load services + professional information
+    const { data: serviceData, error: serviceError } = await supabase
+      .from("services")
+      .select(`
+        id,
+        Title,
+        description,
+        price,
+        image_url,
+        provider_id,
+        category_id,
+        currency,
+        status,
+        created_at,
+        provider_profiles (
           id,
-          Title,
-          description,
-          price,
-          image_url,
-          provider_id,
-          category_id,
-          currency,
-          status,
-          created_at,
-          provider_profiles (
+          user_id,
+          title,
+          experience_years,
+          hourly_rate,
+          city,
+          neighborhood,
+          availability,
+          profiles (
             id,
-            user_id,
-            title,
-            experience_years,
-            hourly_rate,
+            full_name,
+            avatar_URL,
+            bio,
             city,
-            neighborhood,
-            availability,
-            profiles (
-              id,
-              full_name,
-              avatar_ URL,
-              bio,
-              city,
-              country,
-              role,
-              is_verified
-            )
-          ),
-          categories (
-            id,
-            name
+            country,
+            role,
+            is_verified
           )
-        `)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
+        ),
+        categories (
+          id,
+          name
+        )
+      `)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.log("Services error:", error.message);
-        setServicesError(error.message);
-      } else {
-        console.log("Services data:", data);
-        setServices(data || []);
-      }
-
+    if (serviceError) {
+      console.log("Services error:", serviceError.message);
+      setServicesError(serviceError.message);
       setLoadingServices(false);
-    };
+      return;
+    }
 
-    loadServices();
-  }, []);
+    const loadedServices = serviceData || [];
+
+    // 2. Get provider IDs
+    const providerIds = [
+      ...new Set(
+        loadedServices
+          .map((service: any) => service.provider_id)
+          .filter(Boolean)
+      ),
+    ];
+
+    // 3. Load all reviews belonging to these professionals
+    let reviewsData: any[] = [];
+
+    if (providerIds.length > 0) {
+      const { data, error: reviewsError } = await supabase
+        .from("reviews")
+        .select(`
+          provider_id,
+          rating
+        `)
+        .in("provider_id", providerIds);
+
+      if (reviewsError) {
+        console.log("Reviews error:", reviewsError.message);
+      } else {
+        reviewsData = data || [];
+      }
+    }
+
+    // 4. Calculate rating + review count for each professional
+    const providerStats: Record<
+      string,
+      { rating: number; review_count: number }
+    > = {};
+
+    providerIds.forEach((providerId: string) => {
+      const providerReviews = reviewsData.filter(
+        (review) => review.provider_id === providerId
+      );
+
+      const reviewCount = providerReviews.length;
+
+      const averageRating =
+        reviewCount > 0
+          ? providerReviews.reduce(
+              (sum, review) => sum + Number(review.rating || 0),
+              0
+            ) / reviewCount
+          : 0;
+
+      providerStats[providerId] = {
+        rating: averageRating,
+        review_count: reviewCount,
+      };
+    });
+
+    // 5. Attach real rating/review count to every service
+    const servicesWithStats = loadedServices.map((service: any) => ({
+      ...service,
+      provider_profiles: service.provider_profiles
+        ? {
+            ...service.provider_profiles,
+            rating:
+              providerStats[service.provider_id]?.rating ?? 0,
+            review_count:
+              providerStats[service.provider_id]?.review_count ?? 0,
+          }
+        : null,
+    }));
+
+    console.log("Services with real provider stats:", servicesWithStats);
+
+    setServices(servicesWithStats);
+
+    setLoadingServices(false);
+  };
+
+  loadServices();
+}, []);
 
   // Filter services
 
@@ -180,21 +260,23 @@ const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
 });
 
 const groupedProviders = Object.values(
-  filtered.reduce((acc: Record<string, any>, service) => {
-    const providerId = service.provider_profiles?.id;
+  filtered.reduce((groups: Record<string, any>, service: any) => {
+    const provider = service.provider_profiles;
 
-    if (!providerId) return acc;
+    if (!provider) return groups;
 
-    if (!acc[providerId]) {
-      acc[providerId] = {
-        provider: service.provider_profiles,
+    const providerId = provider.id;
+
+    if (!groups[providerId]) {
+      groups[providerId] = {
+        provider,
         services: [],
       };
     }
 
-    acc[providerId].services.push(service);
+    groups[providerId].services.push(service);
 
-    return acc;
+    return groups;
   }, {})
 );
 
@@ -590,7 +672,9 @@ const toggleFavorite = async (providerId: string) => {
     </div>
   )}
 </div>
-<DashboardBottomNav role={userRole} />
+{userRole !== "guest" && (
+  <DashboardBottomNav role={userRole} />
+)}
       <Footer />
     </div>
   );
