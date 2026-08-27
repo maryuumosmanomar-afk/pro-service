@@ -375,7 +375,9 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link to="/" className="text-lg font-bold text-foreground">Pro<span className="gradient-text">Service</span></Link>
+          <div className="text-lg font-bold text-foreground">
+  Pro<span className="gradient-text">Service</span>
+</div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">
   {loading ? "Loading..." : profile?.full_name || "Customer"}
