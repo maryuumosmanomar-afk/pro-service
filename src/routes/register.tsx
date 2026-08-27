@@ -28,10 +28,20 @@ const [neighborhood, setNeighborhood] = useState("");
   setLoading(true);
 
   // 1. Create auth user
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+ const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    data: {
+      first_name: firstName,
+      last_name: lastName,
+      phone,
+      role,
+      neighborhood,
+      category,
+    },
+  },
+});
 
   if (error) {
     console.log("Auth error:", error.message);
@@ -49,23 +59,7 @@ const [neighborhood, setNeighborhood] = useState("");
 const user = data.user;
 
  // 3. Insert into profiles
-const { error: profileError } = await supabase
-  .from("profiles")
-  .insert({
-    id: user.id,
-    full_name: firstName + " " + lastName,
-    phone,
-    role,
-     city: "Qardho",
-     neighborhood,
-
-  });
-
-if (profileError) {
-  console.log("Profile error:", profileError.message);
-  setLoading(false);
-  return;
-}
+ 
 
 // 4. Haddii user-ku Professional yahay, samee provider_profiles row
 if (role === "professional") {
@@ -84,24 +78,7 @@ if (role === "professional") {
   }
 
   // Samee provider profile
-  const { error: providerError } = await supabase
-    .from("provider_profiles")
-    .insert({
-      user_id: user.id,
-      category_id: categoryData.id,
-      title: category,
-      experience_years: 0,
-      hourly_rate: 0,
-       city: "Qardho",
-       neighborhood,
-       availability: true,
-    });
-
-  if (providerError) {
-    console.log("Provider error:", providerError.message);
-    setLoading(false);
-    return;
-  }
+  
 }
 
 // 5. Guul
@@ -147,7 +124,7 @@ navigate({ to: "/login" });
   value={firstName}
   onChange={(e) => setFirstName(e.target.value)}
   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-  placeholder="John"
+  placeholder="name"
   required
 />
                 
@@ -158,7 +135,7 @@ navigate({ to: "/login" });
   value={lastName}
   onChange={(e) => setLastName(e.target.value)}
   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-  placeholder="Doe"
+  placeholder="full name"
   required
 />
                 </div>
@@ -172,7 +149,7 @@ onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border b
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Phone</label>
                 <input type="tel" value={phone}
-onChange={(e) => setPhone(e.target.value)} className= "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="+1 (555) 000-0000" required />
+onChange={(e) => setPhone(e.target.value)} className= "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="+25290 000-0000" required />
             
               </div>
               <div>
