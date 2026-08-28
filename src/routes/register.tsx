@@ -43,15 +43,30 @@ const [neighborhood, setNeighborhood] = useState("");
   },
 });
 
-  if (error) {
-    console.log("Auth error:", error.message);
-    setLoading(false);
-    return;
-  }
+ if (error) {
+  console.log("Auth error:", error.message);
 
-  // 2. Get user id
-  if (!data.user) {
+  alert(
+    error.message.includes("already registered") ||
+    error.message.includes("already exists")
+      ? "This email is already registered. Please use another email or log in."
+      : error.message
+  );
+
+  setLoading(false);
+  return;
+}
+
+// 2. Get user id
+if (!data.user) {
   console.log("User not found");
+  setLoading(false);
+  return;
+}
+
+// Check if Supabase returned an obfuscated user for an existing email
+if (!data.session && data.user?.identities?.length === 0) {
+  alert("This email is already registered. Please use another email or log in.");
   setLoading(false);
   return;
 }

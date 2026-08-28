@@ -13,7 +13,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
+  const [showPw, setShowPw] = useState(false); 
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -63,10 +63,15 @@ console.log(profile);
   return;
 }
 
-if (profile.role === "professional") {
+if (profile.role === "admin") {
+  navigate({ to: "/admin-dashboard" });
+} else if (profile.role === "professional") {
   navigate({ to: "/professional-dashboard" });
-} else {
+} else if (profile.role === "customer") {
   navigate({ to: "/customer-dashboard" });
+} else {
+  alert("Invalid user role.");
+  return;
 }
 };
   return (

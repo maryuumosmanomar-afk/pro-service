@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Users, ShieldCheck, FileText,  LogOut,  CheckCircle,  } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ export const Route = createFileRoute("/admin-dashboard")({
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const navigate = useNavigate();
 
  const [stats, setStats] = useState([
   { label: "Total Users", value: 0, icon: Users },
@@ -20,7 +22,46 @@ function AdminDashboard() {
  
 ]);
 useEffect(() => {
-  loadDashboard();
+  const checkAdmin = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Qof aan login ahayn
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+
+    // Soo qaado role-ka user-ka
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !profile) {
+      navigate({ to: "/login" });
+      return;
+    }
+
+    // Admin kaliya
+    if (profile.role !== "admin") {
+      if (profile.role === "professional") {
+        navigate({ to: "/professional-dashboard" });
+      } else {
+        navigate({ to: "/customer-dashboard" });
+      }
+
+      return;
+    }
+
+    // Haddii uu admin yahay
+    setCheckingAuth(false);
+    loadDashboard();
+  };
+
+  checkAdmin();
 }, []);
 
 const loadDashboard = async () => {
@@ -118,6 +159,15 @@ if (error) {
 
   loadDashboard();
 };
+if (checkingAuth) {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-sm text-muted-foreground">
+        Checking access...
+      </p>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-background">

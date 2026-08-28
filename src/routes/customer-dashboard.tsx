@@ -1,14 +1,43 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Send, Bookmark, Bell, Clock, MapPin, Plus, Star } from "lucide-react";
+import {
+  Send,
+  Bookmark,
+  Bell,
+  Clock,
+  MapPin,
+  Plus,
+  Star,
+  ClipboardList,
+  Camera,
+  CalendarDays,
+  Clock3,
+  MessageCircle,
+  CheckCircle2,
+  Heart,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
 
-
 export const Route = createFileRoute("/customer-dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — ProService Skills Network" }] }),
+  beforeLoad: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+
+  head: () => ({
+    meta: [{ title: "Dashboard — ProService Skills Network" }],
+  }),
+
   component: CustomerDashboard,
 });
 
@@ -41,7 +70,7 @@ const [notificationsLoading, setNotificationsLoading] = useState(false);
 
   const tabs = [
     { id: "requests", label: "My Requests", icon: Send },
-    { id: "saved", label: "Saved Pros", icon: Bookmark },
+    { id: "saved", label: "Saved Pros", icon: Heart },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "history", label: "History", icon: Clock },
   ];
@@ -390,57 +419,159 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-  {loading
-    ? "Welcome..."
-    : `Welcome, ${profile?.full_name || "Customer"}`}
-</h1>
-            <p className="text-sm text-muted-foreground">Manage your service requests</p>
-          </div>
-          
+     
+<div className="mb-8 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-card to-primary/10 shadow-card">
+  <div className="relative flex min-h-[230px] items-center px-6 py-8 sm:px-10 sm:py-10">
+
+    {/* Decorative background */}
+    <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-primary/10 blur-2xl" />
+    <div className="absolute -bottom-16 right-32 h-40 w-40 rounded-full bg-accent/10 blur-3xl" />
+
+    {/* Floating decoration */}
+    <div className="absolute right-8 top-8 hidden h-16 w-16 rotate-6 items-center justify-center rounded-2xl bg-primary/10 text-3xl shadow-sm sm:flex">
+      ✨
+    </div>
+
+    <div className="absolute right-16 bottom-8 hidden h-12 w-12 items-center justify-center rounded-full bg-success/10 text-xl sm:flex">
+      ✓
+    </div>
+
+    {/* Welcome content */}
+    <div className="relative z-10 max-w-2xl">
+
+      <div className="mb-3 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+        ProService Skills Network
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-3xl shadow-sm">
+          👋
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-4">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">
+            Good to see you again,
+          </p>
+
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {loading
+              ? "Welcome..."
+              : `Welcome, ${profile?.full_name || "Customer"}`} 💙
+          </h1>
+        </div>
+      </div>
+
+      <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+        Manage your service requests, track your jobs, and connect with trusted professionals.
+      </p>
+
+    </div>
+  </div>
+</div>
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
   {[
     {
       label: "Total Requests",
       value: bookings.length,
-      color: "primary",
+      description: "All your requests",
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      wave: "text-blue-200",
+      icon: ClipboardList,
     },
     {
       label: "Pending",
       value: bookings.filter((b) => b.status === "pending").length,
-      color: "warning",
+      description: "Waiting for response",
+      color: "text-orange-500",
+      bg: "bg-orange-50",
+      border: "border-orange-100",
+      wave: "text-orange-200",
+      icon: Clock,
     },
     {
       label: "Completed",
       value: bookings.filter((b) => b.status === "completed").length,
-      color: "success",
+      description: "Successfully completed",
+      color: "text-green-600",
+      bg: "bg-green-50",
+      border: "border-green-100",
+      wave: "text-green-200",
+      icon: CheckCircle2,
     },
-   {
-  label: "Saved Pros",
-  value: savedPros.length,   // ✅ xog dhab ah
-  color: "accent",
-},
-  ].map((stat, i) => (
-    <motion.div
-      key={i}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: i * 0.05 }}
-      className="rounded-xl border border-border bg-card p-5 shadow-card"
-    >
-      <p className="text-sm text-muted-foreground">
-        {stat.label}
-      </p>
+    {
+      label: "Saved Pros",
+      value: savedPros.length,
+      description: "Your favorite professionals",
+      color: "text-pink-500",
+      bg: "bg-pink-50",
+      border: "border-pink-100",
+      wave: "text-pink-200",
+      icon: Heart,
+    },
+  ].map((stat, i) => {
+    const Icon = stat.icon;
 
-      <p className="mt-1 text-2xl font-bold text-foreground">
-        {stat.value}
-      </p>
-    </motion.div>
-  ))}
+    return (
+      <motion.div
+        key={stat.label}
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.08 }}
+        className={`group relative overflow-hidden rounded-2xl border ${stat.border} bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
+      >
+        {/* Top content */}
+        <div className="relative z-10">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </p>
+
+              <p className="mt-2 text-3xl font-bold tracking-tight text-foreground">
+                {stat.value}
+              </p>
+            </div>
+
+            {/* Icon */}
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.bg} ${stat.color} transition-transform duration-300 group-hover:scale-110`}
+            >
+              <Icon className="h-6 w-6" strokeWidth={2} />
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm text-muted-foreground">
+            {stat.description}
+          </p>
+        </div>
+
+        {/* Decorative wave */}
+        <div
+          className={`pointer-events-none absolute -bottom-1 left-0 right-0 ${stat.wave}`}
+        >
+          <svg
+            viewBox="0 0 400 70"
+            className="h-14 w-full"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 42 C70 15, 120 18, 185 38 C250 58, 315 58, 400 25 L400 70 L0 70 Z"
+              fill="currentColor"
+              opacity="0.45"
+            />
+          </svg>
+        </div>
+
+        {/* Small decorative glow */}
+        <div
+          className={`absolute -right-8 -top-8 h-20 w-20 rounded-full ${stat.bg} opacity-60 blur-2xl`}
+        />
+      </motion.div>
+    );
+  })}
 </div>
 
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
@@ -450,16 +581,24 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
             </button>
           ))}
         </div>
-
-        {activeTab === "requests" && (
+{activeTab === "requests" && (
   <div className="space-y-3">
     {loadingBookings ? (
-      <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="py-10 text-center">
+        <p className="text-sm text-muted-foreground">
+          Loading your requests...
+        </p>
+      </div>
     ) : bookings.length === 0 ? (
-      <div className="py-12 text-center">
-        <h3 className="text-lg font-semibold text-foreground">
-          Wax codsi ah ma hayside
+      <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center shadow-card">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <Send className="h-6 w-6 text-primary" />
+        </div>
+
+        <h3 className="mt-4 text-lg font-semibold text-foreground">
+          No requests yet
         </h3>
+
         <p className="mt-2 text-sm text-muted-foreground">
           Tag Services page-ka si aad u sameyso codsigaaga ugu horeeya.
         </p>
@@ -468,65 +607,136 @@ const handleReviewSubmit = async (e: React.FormEvent) => {
       bookings.map((booking) => {
         const service = booking.services;
         const provider = booking.provider_profiles;
-        const providerName = provider?.profiles?.full_name || "Professional";
-        const categoryName = service?.categories?.name || "";
+
+        const providerName =
+          provider?.profiles?.full_name || "Professional";
+
+        const categoryName =
+          service?.categories?.name || "Service";
+
+        const isCompleted = booking.status === "completed";
 
         return (
           <motion.div
             key={booking.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-xl border border-border bg-card p-5 shadow-card"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-lg"
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {categoryName}
-                  </span>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
-                      statusColors[booking.status] || "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {booking.status}
-                  </span>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              
+              {/* Left side */}
+              <div className="flex min-w-0 items-start gap-4">
+                
+                {/* Service icon */}
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                    isCompleted
+                      ? "bg-green-50 text-green-600"
+                      : "bg-primary/10 text-primary"
+                  }`}
+                >
+                  <Camera className="h-6 w-6" />
                 </div>
-                <h3 className="mt-1 font-semibold text-card-foreground">
-                  {service?.Title}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Professional: {providerName}
-                </p>
-                {booking.message && (
+
+                {/* Request information */}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {categoryName}
+                    </span>
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        isCompleted
+                          ? "bg-blue-50 text-blue-600"
+                          : booking.status === "pending"
+                          ? "bg-orange-50 text-orange-600"
+                          : booking.status === "accepted"
+                          ? "bg-green-50 text-green-600"
+                          : "bg-red-50 text-red-600"
+                      }`}
+                    >
+                      {booking.status}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-1 text-lg font-bold text-card-foreground">
+                    {service?.Title || "Service"}
+                  </h3>
+
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    {booking.message}
+                    Professional:{" "}
+                    <span className="font-medium text-primary">
+                      {providerName}
+                    </span>
                   </p>
-                )}
-                <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                 
-                  <span>{booking.booking_data}</span>
+
+                  {booking.message && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {booking.message}
+                    </p>
+                  )}
+
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <CalendarDays className="h-4 w-4" />
+                    <span>{booking.booking_data}</span>
+                  </div>
                 </div>
               </div>
-          <div className="flex flex-col items-end gap-2">
-  <span className="text-sm font-bold text-primary">
-    {service?.currency || "USD"} {service?.price ?? 0}
-  </span>
 
-  {provider?.user_id && (
-    <Button asChild size="sm" variant="outline">
-      <Link
-        to="/messages"
-        search={{
-          receiverId: provider.user_id,
-        }}
-      >
-        Message
-      </Link>
-    </Button>
-  )}
-</div>
+              {/* Right side */}
+              <div className="flex shrink-0 flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
+                
+                {/* Completed badge */}
+                {isCompleted && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-600">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Completed
+                  </span>
+                )}
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      {service?.currency || "USD"}
+                    </p>
+
+                    <p className="text-lg font-bold text-foreground">
+                      {service?.price ?? 0}
+                    </p>
+                  </div>
+
+                  {provider?.user_id && (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      <Link
+                        to="/messages"
+                        search={{
+                          receiverId: provider.user_id,
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Message
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Subtle bottom accent */}
+            <div
+              className={`absolute bottom-0 left-0 h-1 w-full ${
+                isCompleted
+                  ? "bg-gradient-to-r from-green-200 via-emerald-100 to-green-200"
+                  : "bg-gradient-to-r from-primary/20 via-primary/5 to-transparent"
+              }`}
+            />
           </motion.div>
         );
       })

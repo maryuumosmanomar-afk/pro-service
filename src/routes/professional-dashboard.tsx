@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Inbox, CheckCircle, DollarSign, Star, MapPin, ToggleLeft, ToggleRight, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -19,6 +19,8 @@ const statusColors: Record<string, string> = {
 };
 
 function ProfessionalDashboard() {
+  const navigate = useNavigate();
+
   const [available, setAvailable] = useState(false);
   const [activeTab, setActiveTab] = useState("incoming");
 
@@ -42,11 +44,17 @@ const [notificationsLoading, setNotificationsLoading] = useState(false);
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user) {
-        console.log("User error:", userError?.message);
-        setLoading(false);
-        return;
-      }
+     if (userError || !user) {
+  console.log("User error:", userError?.message);
+
+  navigate({
+    to: "/login",
+    replace: true,
+  });
+
+  setLoading(false);
+  return;
+}
 
       console.log("Logged in user:", user.id);
 
@@ -57,12 +65,25 @@ const [notificationsLoading, setNotificationsLoading] = useState(false);
         .eq("id", user.id) 
         .single();
 
-      if (profileError) { 
-        console.log("Profile error:", profileError.message);
-      } else {
-        console.log("Profile data:", profileData);
-        setProfile(profileData);
-      }
+   if (profileError) {
+  console.log("Profile error:", profileError.message);
+  setLoading(false);
+  return;
+}
+
+console.log("Profile data:", profileData);
+
+if (profileData?.role !== "professional") {
+  navigate({
+    to: "/customer-dashboard",
+    replace: true,
+  });
+
+  setLoading(false);
+  return;
+}
+
+setProfile(profileData);
 
       // 3. Soo qaado provider profile-ka
      const { data: providerData, error: providerError } = await supabase
