@@ -26,15 +26,15 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
-            <Zap className="h-5 w-5 text-primary-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary sm:h-9 sm:w-9">
+            <Zap className="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
           </div>
 
-          <span className="text-lg font-bold text-foreground">
+          <span className="text-base font-bold text-foreground sm:text-lg">
             Pro<span className="gradient-text">Service</span>
           </span>
         </Link>
@@ -84,21 +84,21 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden"
-          onClick={() => setOpen(!open)}
-        >
+  className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+  onClick={() => setOpen(!open)}
+>
           {open ? (
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           ) : (
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           )}
         </button>
       </div>
 
       {/* Mobile Navigation */}
       {open && (
-        <div className="border-t border-border bg-card p-4 md:hidden">
-          <div className="flex flex-col gap-3">
+        <div className="border-t border-border bg-card px-4 py-3 md:hidden">
+  <div className="flex flex-col gap-2.5">
 
             <Link
               to="/"
