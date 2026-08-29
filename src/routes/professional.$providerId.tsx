@@ -391,24 +391,24 @@ const emptyStars = 5 - fullStars;
   Back
 </button>
         {/* Profile Header */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-card">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center gap-4">
               {profile?.avatar_URL ? (
                 <img
                   src={profile.avatar_URL}
                   alt={providerName}
-                  className="h-24 w-24 rounded-full object-cover"
+                  className="flex h-24 w-24 items-center justify-center rounded-full"
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full gradient-primary text-2xl font-bold text-primary-foreground">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full gradient-primary text-xl font-bold text-primary-foreground sm:h-24 sm:w-24 sm:text-2xl" >
                   {initials}
                 </div>
               )}
 
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-card-foreground">
+                 <h1 className="text-xl font-bold text-card-foreground sm:text-2xl">
                     {providerName}
                   </h1>
 
@@ -443,8 +443,10 @@ const emptyStars = 5 - fullStars;
             </div>
 
             {isCustomer && (
-  <div className="flex gap-3">
+  
+    <div className="flex w-full gap-2 sm:w-auto sm:gap-3">
     <Button
+    className="flex-1 sm:flex-none"
       variant={isFavorite ? "default" : "outline"}
       onClick={toggleFavorite}
       disabled={favoriteLoading}
@@ -458,6 +460,7 @@ const emptyStars = 5 - fullStars;
     </Button>
 
     <Button
+    className="flex-1 sm:flex-none"
       variant="outline"
       onClick={sendMessageToProfessional}
     >
@@ -600,6 +603,7 @@ const emptyStars = 5 - fullStars;
   <h2 className="text-2xl font-bold">
     Services by {providerName}
   </h2>
+  
 
   {services.length === 0 ? (
     <p className="mt-6 text-sm text-muted-foreground">
