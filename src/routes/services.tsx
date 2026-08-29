@@ -489,7 +489,7 @@ const toggleFavorite = async (providerId: string) => {
 {!loadingServices &&
   !servicesError &&
   groupedProviders.length > 0 && (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+   <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
       {groupedProviders.map((item: any, i) => {
         const provider = item.provider;
         const profile = provider?.profiles;
@@ -523,7 +523,7 @@ const toggleFavorite = async (providerId: string) => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="group rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
+           className="group flex h-full min-w-0 flex-col rounded-lg border border-border bg-card p-2.5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover sm:p-4"
           >
             {/* Provider Header */}
             <div className="flex items-start justify-between gap-3">
@@ -539,10 +539,10 @@ const toggleFavorite = async (providerId: string) => {
                   <img
                     src={avatar}
                     alt={providerName}
-                    className="h-12 w-12 shrink-0 rounded-full object-cover transition-transform duration-200 group-hover/profile:scale-105"
+                   className="h-8 w-8 shrink-0 rounded-full object-cover transition-transform duration-200 group-hover/profile:scale-105 sm:h-10 sm:w-10"
                   />
                 ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full gradient-primary text-[10px] font-bold text-primary-foreground sm:h-10 sm:w-10">
                     {initials}
                   </div>
                 )}
