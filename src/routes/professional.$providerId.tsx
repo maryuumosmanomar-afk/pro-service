@@ -381,7 +381,8 @@ const emptyStars = 5 - fullStars;
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="mx-auto max-w-6xl px-4 py-10">
+     
+        <main className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
        <button
   type="button"
   onClick={() => window.history.back()}
@@ -471,14 +472,14 @@ const emptyStars = 5 - fullStars;
           </div>
 
           {/* Professional Details */}
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+            <div className="mt-5 grid grid-cols-5 gap-1.5">
+            <div className="min-w-0 rounded-xl border bg-white p-2 shadow-sm">
 
-  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-yellow-100">
-    <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+ <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg">
+    <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
   </div>
 
-  <p className="text-sm text-gray-500">
+  <p className="truncate text-[10px] text-gray-500">
     Rating
   </p>
 
@@ -493,55 +494,56 @@ const emptyStars = 5 - fullStars;
   {[...Array(emptyStars)].map((_, i) => (
     <Star
       key={`empty-${i}`}
-      className="h-4 w-4 text-gray-300"
+      className="h-3.5 w-3.5 text-gray-300"
     />
   ))}
 </div>
 
-<p className="mt-2 text-2xl font-bold">
+  <p className="mt-1 text-sm font-bold">
   {reviewCount > 0
     ? averageRating.toFixed(1)
     : "--"}
 </p>
 
-<p className="text-sm text-gray-500">
+  <p className="text-[9px] text-gray-500">
   {reviewCount} Reviews
 </p> 
 
 </div>
            <div className="rounded-2xl  border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
 
-  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100">
-    <BriefcaseBusiness className="h-5 w-5 text-blue-600" />
+ <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg">
+    <BriefcaseBusiness className="h-3.5 w-3.5 text-blue-600" />
   </div>
  
 
-  <p className="text-sm text-gray-500">
+  <p className="truncate text-[10px] text-gray-500">
     Experience
   </p>
 
-  <p className="mt-1 text-xl font-bold">
+
+    <p className="mt-1 truncate text-xs font-bold">
     {provider.experience_years || 0} Years
   </p>
 
 </div>
 
-<div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+<div className="min-w-0 rounded-xl border bg-white p-2 shadow-sm">
 
-  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-green-100">
-    <DollarSign className="h-5 w-5 text-green-600" />
+  <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg">
+    <DollarSign className="h-3.5 w-3.5 text-green-600" />
   </div>
 
-  <p className="text-sm text-gray-500">
+  <p className="truncate text-[10px] text-gray-500">
     Hourly Rate
   </p>
 
-  <p className="mt-1 text-xl font-bold">
+ <p className="mt-1 truncate text-xs font-bold">
     ${provider.hourly_rate || 0}/hr
   </p>
 
 </div>
-            <div className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+            <div className="min-w-0 rounded-xl border bg-white p-2 shadow-sm">
 
   <div
     className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${
@@ -551,7 +553,7 @@ const emptyStars = 5 - fullStars;
     }`}
   >
     <CircleCheckBig
-      className={`h-5 w-5 ${
+      className={`h-3.5 w-3.5 ${
         provider.availability
           ? "text-green-600"
           : "text-red-600"
@@ -559,26 +561,27 @@ const emptyStars = 5 - fullStars;
     />
   </div>
 
-  <p className="text-sm text-gray-500">
+  <p className="truncate text-[10px] text-gray-500">
     Availability
   </p>
 
-  <p className="mt-1 text-xl font-bold">
+ <p className="mt-1 truncate text-xs font-bold">
     {provider.availability ? "Available" : "Unavailable"}
   </p>
 
 </div> 
-<div className="rounded-2xl border bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+<div className="min-w-0 rounded-xl border bg-white p-2 shadow-sm" >
 
-  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100">
+  
     📅
+    <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg">
   </div>
 
-  <p className="text-sm text-gray-500">
+  <p className="truncate text-[10px] text-gray-500">
     Member Since
   </p>
 
-  <p className="mt-1 text-xl font-bold">
+  <p className="mt-1 truncate text-xs font-bold">
     {memberSince}
   </p>
 
@@ -610,14 +613,14 @@ const emptyStars = 5 - fullStars;
       This professional has no active services yet.
     </p>
   ) : (
-    <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 grid grid-cols-2 gap-3">
       {services.map((service) => (
         <div
           key={service.id}
           className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-          {/* Service Image */}
-          <div className="relative h-48 w-full overflow-hidden bg-muted">
+          {/* Service Image */} 
+            <div className="relative h-32 w-full overflow-hidden bg-muted sm:h-48">
             {serviceImages.find(
               (img) => img.service_id === service.id
             ) ? (
@@ -639,32 +642,35 @@ const emptyStars = 5 - fullStars;
           </div>
 
           {/* Service Content */}
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             {/* Category */}
             <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               {service.categories?.name || "Service"}
             </span>
 
             {/* Title */}
-            <h3 className="mt-3 text-lg font-bold text-card-foreground">
+           
+              <h3 className="mt-2 text-sm font-bold text-card-foreground sm:mt-3 sm:text-lg">
               {service.Title}
             </h3>
 
             {/* Description */}
             {service.description && (
-              <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground sm:line-clamp-3 sm:text-sm sm:leading-6">
                 {service.description}
               </p>
             )}
 
             {/* Price + Button */}
-            <div className="mt-5 flex items-center justify-between gap-3">
+              <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <span className="font-bold text-primary">
                 {service.currency || "USD"} {service.price}
               </span>
 
               <Button
-                size="sm"
+             
+             size="sm"
+             className="w-full sm:w-auto"
                 onClick={() => {
                   if (!currentUserRole) {
                     navigate({ to: "/login" });
@@ -689,8 +695,9 @@ const emptyStars = 5 - fullStars;
 </div>
      
         {/* Reviews */}
-<div className="mt-12">
-  <h2 className="text-2xl font-bold">
+
+  <div className="mt-8 sm:mt-12">
+    <h2 className="text-xl font-bold sm:text-2xl">
     Customer Reviews
   </h2>
 
@@ -699,22 +706,23 @@ const emptyStars = 5 - fullStars;
       No reviews yet.
     </p>
   ) : (
-    <div className="mt-6 space-y-4">
+      <div className="mt-4 space-y-2">
       {reviews.map((review) => (
-        <div
-          key={review.id}
-          className="rounded-xl border bg-card p-5"
-        >
+       <div
+  key={review.id}
+  className="rounded-xl border bg-card p-3"
+>
+          
           <div className="flex items-center gap-3">
             {review.profiles?.avatar_URL ? (
               <img
   src={review.profiles.avatar_URL}
   alt={review.profiles?.full_name || "Customer"}
   loading="lazy"
-  className="h-12 w-12 rounded-full object-cover"
+  className="h-9 w-9 rounded-full object-cover"
 />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white font-bold">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm text-white font-bold">
                 {review.profiles?.full_name?.charAt(0) || "U"}
               </div>
             )}
@@ -731,12 +739,13 @@ const emptyStars = 5 - fullStars;
           </div>
 
           {review.comment && (
-            <p className="mt-4 text-muted-foreground">
-              {review.comment}
-            </p>
+            <p className="mt-2 text-sm leading-5 text-muted-foreground">
+  {review.comment}
+</p>
           )}
 
-          <p className="mt-3 text-xs text-muted-foreground">
+          
+            <p className="mt-2 text-[10px] text-muted-foreground">
             {new Date(review.created_at).toLocaleDateString()}
           </p>
         </div>
