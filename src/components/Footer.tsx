@@ -33,7 +33,7 @@ export function Footer() {
     className="flex items-center gap-2 whitespace-nowrap text-xs text-muted-foreground hover:text-foreground transition-colors"
   >
     <Phone className="h-4 w-4 shrink-0" />
-    +252 905 442 032
+    +252 905442032
   </a>
 
   <a
