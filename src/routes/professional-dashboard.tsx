@@ -388,313 +388,391 @@ useEffect(() => {
     loadNotifications();
   }
 }, [activeTab]);
-  return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <div className="text-lg font-bold text-foreground">
-  Pro<span className="gradient-text">Service</span>
-</div>
-          <div className="flex items-center gap-4">
-            <button onClick={handleToggleAvailability}
-            className="flex items-center gap-2 text-sm"
->
-              {available ? <ToggleRight className="h-6 w-6 text-success" /> : <ToggleLeft className="h-6 w-6 text-muted-foreground" />}
-              <span className={available ? "text-success font-medium" : "text-muted-foreground"}>
-                {available ? "Available" : "Offline"}
-              </span>
-       
-            </button>
-            
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-  <div>
-    <h1 className="text-2xl font-bold text-foreground">
-      Professional Dashboard
-    </h1>
-
-    <p className="text-sm text-muted-foreground">
-      {loading
-        ? "Loading..."
-        : `${profile?.full_name || "Professional"} · ${
-            categoryName || providerProfile?.title || "Service Provider"
-          }`}
-    </p>
-  </div>
-
-  <Button asChild>
-    <Link to="/add-service">
-      + Add Service
-    </Link>
-  </Button>
-</div>
-
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                <stat.icon className="h-5 w-5 text-primary" />
-              </div>
-              <p className="mt-2 text-2xl font-bold text-foreground">{stat.value}</p>
-            </motion.div>
-          ))}
+ 
+return (
+  <div className="min-h-screen bg-background pb-20">
+    {/* Header */}
+    <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-lg">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-4">
+        <div className="text-base font-bold text-foreground sm:text-lg">
+          Pro<span className="gradient-text">Service</span>
         </div>
 
-        <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
-          {[
-  { id: "incoming", label: "Incoming Requests" },
-  { id: "accepted", label: "Active Jobs" },
-  { id: "reviews", label: "Reviews" },
-  { id: "notifications", label: "Notifications" },
-].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{tab.label}</button>
-          ))}
-        </div>
-
-       {activeTab === "incoming" && (
-  <div className="space-y-3">
-    {loadingBookings ? (
-      <p className="text-sm text-muted-foreground">Loading...</p>
-    ) : bookings.filter((b) => b.status === "pending").length === 0 ? (
-      <p className="text-sm text-muted-foreground">
-        Codsi cusub ma jiro hadda.
-      </p>
-    ) : (
-      bookings
-        .filter((b) => b.status === "pending")
-        .map((booking) => {
-          const service = booking.services;
-          const customer = booking.profiles;
-
-          return (
-            <motion.div
-              key={booking.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="rounded-xl border border-border bg-card p-5 shadow-card"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[booking.status]}`}
-                    >
-                      {booking.status}
-                    </span>
-                  </div>
-                  <h3 className="mt-1 font-semibold text-card-foreground">
-                    {customer?.full_name || "Customer"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {service?.Title}
-                  </p>
-                  {booking.message && (
-                    <p className="text-sm text-muted-foreground">
-                      {booking.message}
-                    </p>
-                  )}
-                  <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                    {customer?.city && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> {customer.city}
-                      </span>
-                    )}
-                    <span>{booking.booking_data}</span>
-                  </div>
-                </div>
-              <div className="flex flex-wrap gap-2">
-  <Button
-    variant="hero"
-    size="sm"
-    onClick={() => handleUpdateStatus(booking.id, "accepted")}
-  >
-    Accept
-  </Button>
-
-  <Button
-    variant="outline"
-    size="sm"
-    onClick={() => handleUpdateStatus(booking.id, "rejected")}
-  >
-    Decline
-  </Button>
-
-  {booking.customer_id && (
-    <Button asChild variant="outline" size="sm">
-      <Link
-        to="/messages"
-        search={{
-          receiverId: booking.customer_id,
-        }}
-      >
-        Message
-      </Link>
-    </Button>
-  )}
-</div>
-              </div>
-            </motion.div>
-          );
-        })
-    )}
-  </div>
-)}
-
-      {activeTab === "accepted" && (
-  <div className="space-y-3">
-    {bookings.filter((b) => b.status === "accepted").length === 0 ? (
-      <p className="text-sm text-muted-foreground">
-        Shaqo firfircoon ma jirto hadda.
-      </p>
-    ) : (
-      bookings
-        .filter((b) => b.status === "accepted")
-        .map((booking) => {
-          const service = booking.services;
-          const customer = booking.profiles;
-
-          return (
-            <div
-              key={booking.id}
-              className="rounded-xl border border-border bg-card p-5 shadow-card"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="font-semibold text-card-foreground">
-                    {customer?.full_name || "Customer"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {service?.Title}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {customer?.phone && (
-                    <Button variant="outline" size="sm">
-                      <Phone className="mr-1 h-3 w-3" /> {customer.phone}
-                    </Button>
-                  )}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleUpdateStatus(booking.id, "completed")}
-                  >
-                    Mark Complete
-                  </Button>
-                </div>
-              </div>
-            </div>
-          );
-        })
-    )}
-  </div>
-)}
-
-
-        {activeTab === "reviews" && (
-  <div className="space-y-3">
-    {loadingReviews ? (
-      <p className="text-sm text-muted-foreground">
-        Loading reviews...
-      </p>
-    ) : reviews.length === 0 ? (
-      <p className="text-sm text-muted-foreground">
-        No reviews yet.
-      </p>
-    ) : (
-      reviews.map((review) => (
-        <div
-          key={review.id}
-          className="rounded-xl border border-border bg-card p-5 shadow-card"
+        <button
+          onClick={handleToggleAvailability}
+          className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm"
         >
-          <div className="flex items-center gap-2">
-            <div className="flex">
-              {Array.from({
-                length: Number(review.rating || 0),
-              }).map((_, index) => (
-                <Star
-                  key={index}
-                  className="h-4 w-4 fill-warning text-warning"
-                />
-              ))}
-            </div>
-
-            <span className="text-sm font-medium text-card-foreground">
-              {review.profiles?.full_name || "Customer"}
-            </span>
-          </div>
-
-          {review.comment && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {review.comment}
-            </p>
+          {available ? (
+            <ToggleRight className="h-5 w-5 text-success sm:h-6 sm:w-6" />
+          ) : (
+            <ToggleLeft className="h-5 w-5 text-muted-foreground sm:h-6 sm:w-6" />
           )}
 
-          <p className="mt-1 text-xs text-muted-foreground">
-            {new Date(review.created_at).toLocaleDateString()}
+          <span
+            className={
+              available
+                ? "font-medium text-success"
+                : "text-muted-foreground"
+            }
+          >
+            {available ? "Available" : "Offline"}
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <div className="mx-auto max-w-7xl px-3 py-5 sm:px-4 sm:py-8">
+
+      {/* Dashboard Header */}
+      <div className="mb-5 flex items-center justify-between gap-3 sm:mb-7">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+            Professional Dashboard
+          </h1>
+
+          <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
+            {loading
+              ? "Loading..."
+              : `${profile?.full_name || "Professional"} · ${
+                  categoryName ||
+                  providerProfile?.title ||
+                  "Service Provider"
+                }`}
           </p>
         </div>
-      ))
-    )}
-  </div>
-)}
-{activeTab === "notifications" && (
-  <div className="space-y-3">
-    {notificationsLoading ? (
-      <p className="text-sm text-muted-foreground">
-        Loading notifications...
-      </p>
-    ) : notifications.length === 0 ? (
-      <div className="py-12 text-center">
-        <h3 className="text-lg font-semibold text-foreground">
-          No notifications
-        </h3>
 
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your notifications will appear here.
-        </p>
+        <Button asChild size="sm" className="shrink-0">
+          <Link to="/add-service">+ Add Service</Link>
+        </Button>
       </div>
-    ) : (
-      notifications.map((notification) => (
-        <div
-          key={notification.id}
-          className={`rounded-xl border border-border bg-card p-5 shadow-card ${
-            !notification.is_read ? "border-primary/30 bg-primary/5" : ""
-          }`}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-card-foreground">
-                {notification.title}
-              </h3>
 
-              <p className="mt-1 text-sm text-muted-foreground">
-                {notification.body}
+      {/* Stats */}
+      <div className="mb-5 grid grid-cols-4 gap-2 sm:mb-7 sm:gap-4">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="rounded-xl border border-border bg-card p-2.5 shadow-card sm:p-5"
+          >
+            <div className="flex items-center justify-between gap-1">
+              <p className="truncate text-[10px] leading-tight text-muted-foreground sm:text-sm">
+                {stat.label}
               </p>
 
-              <p className="mt-2 text-xs text-muted-foreground">
-                {new Date(
-                  notification.created_at
-                ).toLocaleString()}
-              </p>
+              <stat.icon className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" />
             </div>
 
-            {!notification.is_read && (
-              <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                New
-              </span>
-            )}
-          </div>
-        </div>
-      ))
-    )}
-  </div>
-)}
+            <p className="mt-1.5 text-xl font-bold text-foreground sm:mt-2 sm:text-2xl">
+              {stat.value}
+            </p>
+          </motion.div>
+        ))}
       </div>
+
+      {/* Tabs */}
+      <div className="mb-5 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1 sm:mb-6">
+        {[
+          { id: "incoming", label: "Incoming Requests" },
+          { id: "accepted", label: "Active Jobs" },
+          { id: "reviews", label: "Reviews" },
+          { id: "notifications", label: "Notifications" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:px-4 sm:py-2 sm:text-sm ${
+              activeTab === tab.id
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Incoming Requests */}
+      {activeTab === "incoming" && (
+        <div className="space-y-2.5">
+          {loadingBookings ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : bookings.filter((b) => b.status === "pending").length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Codsi cusub ma jiro hadda.
+            </p>
+          ) : (
+            bookings
+              .filter((b) => b.status === "pending")
+              .map((booking) => {
+                const service = booking.services;
+                const customer = booking.profiles;
+
+                return (
+                  <motion.div
+                    key={booking.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="rounded-xl border border-border bg-card p-3.5 shadow-card sm:p-5"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
+                              statusColors[booking.status]
+                            }`}
+                          >
+                            {booking.status}
+                          </span>
+                        </div>
+
+                        <h3 className="mt-1 text-sm font-semibold text-card-foreground sm:text-base">
+                          {customer?.full_name || "Customer"}
+                        </h3>
+
+                        <p className="text-xs text-muted-foreground sm:text-sm">
+                          {service?.Title}
+                        </p>
+
+                        {booking.message && (
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                            {booking.message}
+                          </p>
+                        )}
+
+                        <div className="mt-1.5 flex items-center gap-3 text-[10px] text-muted-foreground sm:text-xs">
+                          {customer?.city && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {customer.city}
+                            </span>
+                          )}
+
+                          <span>{booking.booking_data}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5 sm:shrink-0">
+                        <Button
+                          variant="hero"
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateStatus(
+                              booking.id,
+                              "accepted"
+                            )
+                          }
+                        >
+                          Accept
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateStatus(
+                              booking.id,
+                              "rejected"
+                            )
+                          }
+                        >
+                          Decline
+                        </Button>
+
+                        {booking.customer_id && (
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Link
+                              to="/messages"
+                              search={{
+                                receiverId: booking.customer_id,
+                              }}
+                            >
+                              Message
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
+          )}
+        </div>
+      )}
+
+      {/* Active Jobs */}
+      {activeTab === "accepted" && (
+        <div className="space-y-2.5">
+          {bookings.filter((b) => b.status === "accepted").length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Shaqo firfircoon ma jirto hadda.
+            </p>
+          ) : (
+            bookings
+              .filter((b) => b.status === "accepted")
+              .map((booking) => {
+                const service = booking.services;
+                const customer = booking.profiles;
+
+                return (
+                  <div
+                    key={booking.id}
+                    className="rounded-xl border border-border bg-card p-3.5 shadow-card sm:p-5"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-card-foreground sm:text-base">
+                          {customer?.full_name || "Customer"}
+                        </h3>
+
+                        <p className="text-xs text-muted-foreground sm:text-sm">
+                          {service?.Title}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {customer?.phone && (
+                          <Button variant="outline" size="sm">
+                            <Phone className="mr-1 h-3 w-3" />
+                            {customer.phone}
+                          </Button>
+                        )}
+
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateStatus(
+                              booking.id,
+                              "completed"
+                            )
+                          }
+                        >
+                          Mark Complete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+          )}
+        </div>
+      )}
+
+      {/* Reviews */}
+      {activeTab === "reviews" && (
+        <div className="space-y-2">
+          {loadingReviews ? (
+            <p className="text-sm text-muted-foreground">
+              Loading reviews...
+            </p>
+          ) : reviews.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No reviews yet.
+            </p>
+          ) : (
+            reviews.map((review) => (
+              <div
+                key={review.id}
+                className="rounded-xl border border-border bg-card px-3.5 py-3 shadow-sm sm:p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    {Array.from({
+                      length: Number(review.rating || 0),
+                    }).map((_, index) => (
+                      <Star
+                        key={index}
+                        className="h-3.5 w-3.5 fill-warning text-warning"
+                      />
+                    ))}
+                  </div>
+
+                  <span className="text-xs font-semibold text-card-foreground">
+                    {review.profiles?.full_name || "Customer"}
+                  </span>
+                </div>
+
+                {review.comment && (
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+                    {review.comment}
+                  </p>
+                )}
+
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {new Date(
+                    review.created_at
+                  ).toLocaleDateString()}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Notifications */}
+      {activeTab === "notifications" && (
+        <div className="space-y-2.5">
+          {notificationsLoading ? (
+            <p className="text-sm text-muted-foreground">
+              Loading notifications...
+            </p>
+          ) : notifications.length === 0 ? (
+            <div className="py-8 text-center">
+              <h3 className="text-base font-semibold text-foreground">
+                No notifications
+              </h3>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Your notifications will appear here.
+              </p>
+            </div>
+          ) : (
+            notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`rounded-xl border border-border bg-card px-3.5 py-3 shadow-sm sm:p-4 ${
+                  !notification.is_read
+                    ? "border-primary/30 bg-primary/5"
+                    : ""
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-card-foreground">
+                      {notification.title}
+                    </h3>
+
+                    <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                      {notification.body}
+                    </p>
+
+                    <p className="mt-1.5 text-[10px] text-muted-foreground">
+                      {new Date(
+                        notification.created_at
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+
+                  {!notification.is_read && (
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      New
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
       <DashboardBottomNav role="professional" />
     </div>
   );

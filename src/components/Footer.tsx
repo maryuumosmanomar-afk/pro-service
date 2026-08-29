@@ -27,20 +27,33 @@ export function Footer() {
           </div>
           <div>
             <h4 className="mb-3 text-sm font-semibold text-foreground">Contact</h4>
-            <div className="flex flex-col gap-1.5">
-              <a href="tel:+252905442032" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <Phone className="4-2 w-4" />
-                +252 905 442 032
-              </a>
-              <a href="https://wa.me/252905442032" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </a>
-              <a href="mailto:maryuumosmanomar@gmail.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="h-4 w-4" />
-                Email
-              </a>
-            </div>
+            <div className="flex flex-col gap-2">
+  <a
+    href="tel:+252905442032"
+    className="flex items-center gap-2 whitespace-nowrap text-xs text-muted-foreground hover:text-foreground transition-colors"
+  >
+    <Phone className="h-4 w-4 shrink-0" />
+    +252 905 442 032
+  </a>
+
+  <a
+    href="https://wa.me/252905442032"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+  >
+    <MessageCircle className="h-4 w-4 shrink-0" />
+    WhatsApp
+  </a>
+
+  <a
+    href="mailto:maryuumosmanomar@gmail.com"
+    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+  >
+    <Mail className="h-4 w-4 shrink-0" />
+    Email
+  </a>
+</div>
           </div>
           <div>
             <h4 className="mb-3 text-sm font-semibold text-foreground">Legal</h4>
